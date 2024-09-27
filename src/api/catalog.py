@@ -12,29 +12,10 @@ router = APIRouter()
 def get_catalog():
     
     with db.engine.begin() as connection:
-        print("HEREEEEEEEEE1")
         result = connection.execute(sqlalchemy.text("SELECT num_green_potions FROM global_inventory"))
-        print("HEREEEEEEEEE2")
         row = result.fetchone()
-        print("HEREEEEEEEEE3")
+        
     
-    """
-    Each unique item combination must have only a single price.
-    """
-
-    """
-        return [
-            {
-                "sku": "RED_POTION_0",
-                "name": "red potion",
-                "quantity": 1,
-                "price": 50,
-                "potion_type": [100, 0, 0, 0],
-            }
-        ]
-
-    
-    """
 
     return [
             {

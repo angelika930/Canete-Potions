@@ -34,7 +34,7 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
 
         if row[0] < 10:
             for barrel in barrels_delivered:
-                if barrel.sku.contains("green") and row[2] >= barrel.price:        #CHECK THIS 
+                if barrel.sku.__contains__("green") and row[2] >= barrel.price:        #CHECK THIS 
                     connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_green_potions = num_green_potions + 1"))
                     update_gold = sqlalchemy.text("UPDATE global_inventory SET gold = gold - :price")
                     connection.execute(update_gold, {"price": barrel.price})

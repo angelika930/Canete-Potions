@@ -5,9 +5,6 @@ from src.api import auth
 import sqlalchemy
 from src import database as db
 
-#with db.engine.begin() as connection:
-#        result = connection.execute(sqlalchemy.text(sql_to_execute))
-
 
 router = APIRouter(
     prefix="/bottler",
@@ -24,6 +21,8 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int
     """ """
     print(f"potions delievered: {potions_delivered} order_id: {order_id}")
 
+    #Manually subtracting gold here and updating db
+    #Adding ml manually and updating db
     return "OK"
 
 @router.post("/plan")
@@ -36,14 +35,30 @@ def get_bottle_plan():
     # green potion to add.
     # Expressed in integers from 1 to 100 that must sum up to 100.
 
-    # Initial logic: bottle all barrels into red potions.
+    # Initial logic: bottle all barrels into green potions.
 
-    return [
+    with db.engine.begin() as connection:
+        result = connection.execute(sqlalchemy.text("SELECT num_green_potions, num_green_ml FROM global_inventory"))
+    
+    row = result.fetchone()
+    print("ROW: ", row)
+
+    if row.num_green_ml >= 100 and row.num_green_potions < 10:
+         potion_quantity = row.num_green_ml//100
+         return [
             {
-                "potion_type": [100, 0, 0, 0],
-                "quantity": 5,
+                "potion_type": [0, 100, 0, 0],
+                "quantity": potion_quantity,
             }
         ]
+    
+    else: 
+        return [
+                {
+                    "potion_type": [0, 0, 0, 0],
+                    "quantity": 0,
+                }
+            ]
 
 if __name__ == "__main__":
     print(get_bottle_plan())

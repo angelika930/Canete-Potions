@@ -25,20 +25,18 @@ class Barrel(BaseModel):
 @router.post("/deliver/{order_id}")
 def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
     """ """
-    print(f"barrels delievered: {barrels_delivered} order_id: {order_id}")
-
+    
     with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text("SELECT num_green_potions FROM global_inventory"))
-
+        result = connection.execute(sqlalchemy.text("SELECT num_green_potions, gold, num_green_ml FROM global_inventory"))
         row = result.fetchone()
 
-        if row[0] < 10:
-            for barrel in barrels_delivered:
-                if barrel.sku.__contains__("green") and row[2] >= barrel.price:        #CHECK THIS 
-                    connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_green_potions = num_green_potions + 1"))
-                    update_gold = sqlalchemy.text("UPDATE global_inventory SET gold = gold - :price")
-                    connection.execute(update_gold, {"price": barrel.price})
-                break
+    print(f"barrels delievered: {barrels_delivered} order_id: {order_id}")
+    for barrel in barrels_delivered:
+        connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_green_ml = num_green_ml + :ml"), {"ml": barrel.ml_per_barrel})
+        update_gold = sqlalchemy.text("UPDATE global_inventory SET gold = gold - :price")
+        connection.execute(update_gold, {"price": barrel.price})
+
+
     return "OK"
 
 # Gets called once a day
@@ -47,10 +45,17 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     """ """
     print(wholesale_catalog)
 
-    return [
-        {
-            "sku": "SMALL_RED_BARREL",
-            "quantity": 1,
-        }
-    ]
+    with db.engine.begin() as connection:
+        result = connection.execute(sqlalchemy.text("SELECT num_green_potions, gold FROM global_inventory"))
+
+        row = result.fetchone()
+            
+
+    if row[0] < 10: 
+        return [
+            {
+                "sku": "SMALL_GREEN_BARREL",
+                "quantity": 1,
+            }
+        ]
 

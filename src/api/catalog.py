@@ -4,7 +4,6 @@ from src import database as db
 
 
 
-
 router = APIRouter()
 
 
@@ -18,13 +17,8 @@ def get_catalog():
     
 
     return [
-            {
-                "sku": "RED_POTION_0",
-                "name": "red potion",
-                "quantity": 1,
-                "price": 50,
-                "potion_type": [100, 0, 0, 0],
-            },
+       
+            
             
             {
                 "sku": "GREEN_POTION_0",

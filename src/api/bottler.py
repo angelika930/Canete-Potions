@@ -21,6 +21,15 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int
     """ """
     print(f"potions delievered: {potions_delivered} order_id: {order_id}")
 
+    with db.engine.begin() as connection:
+        result = connection.execute(sqlalchemy.text("SELECT num_green_potions, num_green_ml FROM global_inventory"))
+    
+    row = result.fetchone()
+
+    #Will need to change later, shop will only update ml for green potions
+    for potion in potions_delivered:
+          connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_green_potions = num_green_potions + :green_potions"), {"green_potions": row.num_green_potions})
+
     #Manually subtracting gold here and updating db
     #Adding ml manually and updating db
     return "OK"
@@ -41,7 +50,6 @@ def get_bottle_plan():
         result = connection.execute(sqlalchemy.text("SELECT num_green_potions, num_green_ml FROM global_inventory"))
     
     row = result.fetchone()
-    print("ROW: ", row)
 
     if row.num_green_ml >= 100 and row.num_green_potions < 10:
          potion_quantity = row.num_green_ml//100

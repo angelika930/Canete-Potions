@@ -30,10 +30,10 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int
         if potion.potion_type[0] == 'r':
             connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_red_potions = num_red_potions + :red_potions"), {"red_potions": potion.quantity})
 
-        elif potion.potion_type[1] == 'g':
+        elif potion.potion_type[0] == 'g':
             connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_green_potions = num_green_potions + :green_potions"), {"green_potions": potion.quantity})
 
-        elif potion.potion_type[2] == 'b':
+        elif potion.potion_type[0] == 'b':
             connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_blue_potions = num_blue_potions + :blue_potions"), {"blue_potions": potion.quantity})
  
     return "OK"

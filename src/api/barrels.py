@@ -52,6 +52,8 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
             #Update gold accordingly
             update_gold = sqlalchemy.text("UPDATE global_inventory SET gold = gold - :price")
             connection.execute(update_gold, {"price": barrel.price})
+            print("Current Gold: ", row.gold)
+            print("potion type:", barrel.potion_type)
 
 
     return "OK"

@@ -38,15 +38,15 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
             #############    CHECK THIS FOR POTION TYPE OF BARREL??????      #######################
 
             #Checks if potion type is red
-            if barrel.potion_type[0] == 'r':
+            if barrel.potion_type[0] == 1:
                 connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_red_ml = num_red_ml + :ml"), {"ml": barrel.ml_per_barrel})
 
             #Checks if potion type is green
-            elif barrel.potion_type[0] == 'g':
+            elif barrel.potion_type[1] == 1:
                 connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_green_ml = num_green_ml + :ml"), {"ml": barrel.ml_per_barrel})
 
             #Checks if potion type is blue
-            elif barrel.potion_type[0] == 'b':
+            elif barrel.potion_type[2] == 1:
                 connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_blue_ml = num_blue_ml + :ml"), {"ml": barrel.ml_per_barrel})
             
             #Update gold accordingly
@@ -73,17 +73,8 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
             {
                 "sku": "SMALL_GREEN_BARREL",
                 "quantity": 1,
-            },
-            
-            {
-                "sku": "SMALL_RED_BARREL",
-                "quantity": 1,
-            },
-
-            {
-                "sku": "SMALL_BLUE_BARREL",
-                "quantity": 1,
             }
+          
         ]
     
     elif row.num_red_potions < 10 and row.num_green_potions < 10 and not(row.num_blue_potions < 10):

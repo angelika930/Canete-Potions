@@ -21,7 +21,8 @@ def get_inventory():
         row = result.fetchone()
 
     
-    return {"number_of_green_potions": row.num_green_potions, "number_of_red_potions": row.num_red_potions, "number_of_blue_potions": row.num_blue_potions, "gold": row.gold}
+    return {"number_of_green_potions": row.num_green_potions, "number_of_red_potions": row.num_red_potions, "number_of_blue_potions": row.num_blue_potions, 
+            "number_of_green_ml:": row.num_green_ml, "number_of_red_ml": row.num_red_ml, "number_of_blue_ml": row.num_blue_ml, "gold": row.gold}
 
 # Gets called once a day
 @router.post("/plan")

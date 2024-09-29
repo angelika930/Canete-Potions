@@ -27,14 +27,29 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
     """ """
     
     with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text("SELECT num_green_potions, gold, num_green_ml FROM global_inventory"))
+        result = connection.execute(sqlalchemy.text("SELECT * FROM global_inventory"))
         row = result.fetchone()
 
     print(f"barrels delievered: {barrels_delivered} order_id: {order_id}")
     for barrel in barrels_delivered:
         print("hello")
         with db.engine.begin() as connection:
-            connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_green_ml = num_green_ml + :ml"), {"ml": barrel.ml_per_barrel})
+
+            #############    CHECK THIS FOR POTION TYPE OF BARREL??????      #######################
+
+            #Checks if potion type is red
+            if barrel.potion_type[0] == 'r':
+                connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_red_ml = num_red_ml + :ml"), {"ml": barrel.ml_per_barrel})
+
+            #Checks if potion type is green
+            elif barrel.potion_type[0] == 'g':
+                connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_green_ml = num_green_ml + :ml"), {"ml": barrel.ml_per_barrel})
+
+            #Checks if potion type is blue
+            elif barrel.potion_type[0] == 'b':
+                connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_blue_ml = num_blue_ml + :ml"), {"ml": barrel.ml_per_barrel})
+            
+            #Update gold accordingly
             update_gold = sqlalchemy.text("UPDATE global_inventory SET gold = gold - :price")
             connection.execute(update_gold, {"price": barrel.price})
 
@@ -48,16 +63,67 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     print(wholesale_catalog)
 
     with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text("SELECT num_green_potions, gold FROM global_inventory"))
+        result = connection.execute(sqlalchemy.text("SELECT * FROM global_inventory"))
 
         row = result.fetchone()
             
 
-    if row.num_green_potions < 10: 
+    if row.num_green_potions < 10 and row.num_red_potions < 10 and row.num_blue_potions < 10: 
         return [
+            {
+                "sku": "SMALL_GREEN_BARREL",
+                "quantity": 1,
+            },
+            
+            {
+                "sku": "SMALL_RED_BARREL",
+                "quantity": 1,
+            },
+
+            {
+                "sku": "SMALL_BLUE_BARREL",
+                "quantity": 1,
+            }
+        ]
+    
+    elif row.num_red_potions < 10 and row.num_green_potions < 10 and not(row.num_blue_potions < 10):
+        return [
+            {
+                "sku": "SMALL_RED_BARREL",
+                "quantity": 1,
+            },
+            
             {
                 "sku": "SMALL_GREEN_BARREL",
                 "quantity": 1,
             }
         ]
+    
+    elif row.num_green_potions < 10 and row.num_blue_potions < 10 and not(row.num_red_potions < 10):
+        return [
+            {
+                "sku": "SMALL_BLUE_BARREL",
+                "quantity": 1,
+            },
+
+            {
+                "sku": "SMALL_GREEN_BARREL",
+                "quantity": 1,
+            }
+        ]
+    
+    elif row.num_red_potions < 10 and row.num_blue_potions < 10 and not(row.num_green_potions < 10):
+         return [
+            {
+                "sku": "SMALL_RED_BARREL",
+                "quantity": 1,
+            },
+
+            {
+                "sku": "SMALL_BLUE_BARREL",
+                "quantity": 1,
+            }
+        ]
+
+    else: return "NO BARRELS NEEDED"
 

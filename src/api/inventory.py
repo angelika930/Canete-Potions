@@ -16,11 +16,13 @@ def get_inventory():
     """ """
 
     with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text("SELECT num_green_potions, num_green_ml, gold FROM global_inventory"))
+        result = connection.execute(sqlalchemy.text("SELECT * FROM global_inventory"))
 
         row = result.fetchone()
+
+        total_potions = row.num_green_potions + row.num_red_potions + row.num_blue_potions
     
-    return {"number_of_potions": row.num_green_potions, "ml_in_barrels": row.num_green_ml, "gold": row.gold}
+    return {"number_of_potions": total_potions, "ml_in_barrels": row.num_green_ml, "gold": row.gold}
 
 # Gets called once a day
 @router.post("/plan")

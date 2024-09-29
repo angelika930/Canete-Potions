@@ -27,13 +27,13 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int
     row = result.fetchone()
 
     for potion in potions_delivered:
-        if potion.potion_type[0] == 'r':
+        if potion.potion_type[0] == 1:
             connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_red_potions = num_red_potions + :red_potions"), {"red_potions": potion.quantity})
 
-        elif potion.potion_type[0] == 'g':
+        elif potion.potion_type[1] == 1:
             connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_green_potions = num_green_potions + :green_potions"), {"green_potions": potion.quantity})
 
-        elif potion.potion_type[0] == 'b':
+        elif potion.potion_type[2] == 1:
             connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_blue_potions = num_blue_potions + :blue_potions"), {"blue_potions": potion.quantity})
  
     return "OK"
@@ -66,7 +66,10 @@ def get_bottle_plan():
             "quantity": green_potion_quantity,
         },
 
-        {
+      
+    ]
+    """
+      {
             "potion_type": [100, 0, 0, 0],
             "quantity": red_potion_quantity,
         },
@@ -75,7 +78,8 @@ def get_bottle_plan():
             "potion_type": [0, 0, 100, 0],
             "quantity": blue_potion_quantity,
         }
-    ]
+    
+    """
     
    
     

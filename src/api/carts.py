@@ -78,6 +78,7 @@ class Customer(BaseModel):
     customer_name: str
     character_class: str
     level: int
+    cart_id: int
 
 @router.post("/visits/{visit_id}")
 def post_visits(visit_id: int, customers: list[Customer]):

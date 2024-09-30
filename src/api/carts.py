@@ -120,9 +120,5 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
     print(cart_checkout.payment)
     if cart_checkout.payment != "string":
         print(int(cart_checkout.payment))
-    
-    
-  
-
 
     return {"total_potions_bought": 1, "total_gold_paid": cart_checkout.payment}

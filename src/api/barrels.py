@@ -34,14 +34,21 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
 
     for barrel in barrels_delivered:
         with db.engine.begin() as connection:
-        #Checks if potion type is green
-            if barrel.potion_type[1] == 1:
-                connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_green_ml = num_green_ml + :ml"), {"ml": barrel.ml_per_barrel})
 
+            
             #Update gold accordingly
             if row.gold >= barrel.price:
                 update_gold = sqlalchemy.text("UPDATE global_inventory SET gold = gold - :price")
                 connection.execute(update_gold, {"price": barrel.price})
+                
+                #Checks if potion type is green   ************CHECK THIS ******************
+                #if barrel.potion_type[1] == 1:
+                connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_green_ml = num_green_ml + :ml"), {"ml": barrel.ml_per_barrel})
+            
+            else: break
+     
+           
+
             print("Current Gold: ", row.gold)
             print("potion type:", barrel.potion_type)
 

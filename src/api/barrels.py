@@ -96,6 +96,8 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
                     }
                 
                 ]
+
+            print(barrel)
             break
     
     #For later versions

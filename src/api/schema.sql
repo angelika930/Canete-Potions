@@ -1,21 +1,20 @@
 CREATE TABLE customer_carts (
-    id cart_id generated always as identity,
-    customer_name text
+    cart_id SERIAL PRIMARY KEY,
+    customer_name TEXT NOT NULL
     
 );
 
 CREATE TABLE cart_items (
-    id potion_id generated always as identity,
-    potion_items: INT[][],
-    total_price: int
+    potion_id PRIMARY KEY,
+    potion_items INT[][],
+    total_price int NOT NULL
 );
 
-
 CREATE TABLE potions (
-    id potion_id generated always as identity,
+    potion_id PRIMARY KEY,
     potion_type INT[],
-    quantity int,
-    price int
+    quantity int NOT NULL,
+    price int NOT NULL
 );
 
 

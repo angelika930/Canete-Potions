@@ -87,7 +87,9 @@ def post_visits(visit_id: int, customers: list[Customer]):
     """
     print(customers)
 
-    return "OK"
+    return {
+        "success": True
+        }
 
 
 @router.post("/")

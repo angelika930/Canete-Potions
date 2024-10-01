@@ -29,7 +29,8 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int
             row = result.fetchone()
             if row.num_green_ml >= 100:
                 connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_green_potions = num_green_potions + :green_potions"), {"green_potions": potion.quantity})
-                connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_green_ml = num_green_ml - :potion_ml"), {"potion_ml": 100*(potion.quantity)})
+                total_ml = 100*(potion.quantity)
+                connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_green_ml = num_green_ml - :potion_ml"), {"potion_ml": total_ml})
 
 
  

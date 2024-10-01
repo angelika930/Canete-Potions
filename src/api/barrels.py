@@ -75,6 +75,7 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
 def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     """ """
     print(wholesale_catalog)
+    barrel_bought = False
 
     with db.engine.begin() as connection:
         result = connection.execute(sqlalchemy.text("SELECT num_green_potions, num_green_ml, gold FROM global_inventory"))
@@ -85,22 +86,20 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
         if barrel.sku == 'SMALL_GREEN_BARREL':
 
             if row.num_green_potions < 10 and row.gold >= barrel.price: 
+                barrel_bought = True
                 return [
                     {
                         "sku": "SMALL_GREEN_BARREL",
-                        "quantity": 1,
-
-                        "sku": "SMALL_GREEN_BARREL",
-                        "ml_per_barrel": 500,
-                        "potion_type": [0, 1, 0, 0], 
-                        "price": 100,
-                        "quantity": 10
+                        "quantity": 1
                     }
                 
                 ]
 
             print(barrel)
             break
+    
+    if barrel_bought == False:
+        return []
     
     #For later versions
     """

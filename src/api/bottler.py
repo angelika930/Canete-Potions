@@ -70,7 +70,7 @@ def get_bottle_plan():
         ]
 
     else:
-        return "No Bottle Plan."
+        return []
 
 
     

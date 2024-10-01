@@ -114,11 +114,5 @@ class CartCheckout(BaseModel):
 def checkout(cart_id: int, cart_checkout: CartCheckout):
     """ """
     with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text("SELECT * from global_inventory"))
         connection.execute(sqlalchemy.text("UPDATE global_inventory SET gold = gold + 30"))
 
-    print(cart_checkout.payment)
-    if cart_checkout.payment != "string":
-        print(int(cart_checkout.payment))
-
-    return {"total_potions_bought": 1, "total_gold_paid": cart_checkout.payment}

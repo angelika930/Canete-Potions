@@ -26,23 +26,19 @@ class Barrel(BaseModel):
 def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
     """ """
     
-    with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text("SELECT * FROM global_inventory"))
-        row = result.fetchone()
+       
+       
 
     print(f"barrels delievered: {barrels_delivered} order_id: {order_id}")
 
     for barrel in barrels_delivered:
         with db.engine.begin() as connection:
-
-            
             #Update gold accordingly
+            result = connection.execute(sqlalchemy.text("SELECT num_green_ml, num_green_potions, gold FROM global_inventory"))
+            row = result.fetchone()
             if row.gold >= barrel.price:
                 update_gold = sqlalchemy.text("UPDATE global_inventory SET gold = gold - :price")
                 connection.execute(update_gold, {"price": barrel.price})
-                
-                #Checks if potion type is green   ************CHECK THIS ******************
-                #if barrel.potion_type[1] == 1:
                 connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_green_ml = num_green_ml + :ml"), {"ml": barrel.ml_per_barrel})
             
             else: break
@@ -81,7 +77,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     print(wholesale_catalog)
 
     with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text("SELECT * FROM global_inventory"))
+        result = connection.execute(sqlalchemy.text("SELECT num_green_potions, num_green_ml, gold FROM global_inventory"))
 
         row = result.fetchone()
             
@@ -93,6 +89,12 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
                     {
                         "sku": "SMALL_GREEN_BARREL",
                         "quantity": 1,
+
+                        "sku": "SMALL_GREEN_BARREL",
+                        "ml_per_barrel": 500,
+                        "potion_type": [0, 1, 0, 0], 
+                        "price": 100,
+                        "quantity": 10
                     }
                 
                 ]

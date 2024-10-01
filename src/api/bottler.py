@@ -21,12 +21,17 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int
     """ """
     print(f"potions delievered: {potions_delivered} order_id: {order_id}")
 
-   
-      
+
 
     for potion in potions_delivered:
-        with db.engine.begin() as connection:
-            connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_green_potions = num_green_potions + :green_potions"), {"green_potions": potion.quantity})
+                   
+        if row.num_green_ml >= 100:
+            with db.engine.begin() as connection:
+                result = connection.execute(sqlalchemy.text("SELECT num_green_ml, num_green_potions, gold FROM global_inventory"))
+                row = result.fetchone()
+                connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_green_potions = num_green_potions + :green_potions"), {"green_potions": potion.quantity})
+                connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_green_ml = num_green_ml - 100"))
+
 
  
     return "OK"
@@ -43,14 +48,17 @@ def get_bottle_plan():
 
     # Initial logic: bottle all barrels into green potions.
 
-    with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text("SELECT * FROM global_inventory"))
-    
-    row = result.fetchone()
-    
-    green_potion_quantity = row.num_green_ml//100
     #red_potion_quantity = row.num_red_ml//100
     #blue_potion_quantity = row.num_blue_ml//100
+
+    with db.engine.begin() as connection:
+        result = connection.execute(sqlalchemy.text("SELECT num_green_ml, num_green_potions, gold FROM global_inventory"))
+    
+    row = result.fetchone()
+    print(row.num_green_ml)
+    
+    green_potion_quantity = row.num_green_ml//100
+   
 
     if green_potion_quantity >= 1:
        

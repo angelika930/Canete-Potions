@@ -49,14 +49,26 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
             print("potion type:", barrel.potion_type)
 
             #For later versions
+
+            #ask if the price reflects each individual barrel or total cost
             """
             #Checks if potion type is red
-            if barrel.potion_type[0] == 1:
-                connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_red_ml = num_red_ml + :ml"), {"ml": barrel.ml_per_barrel})
+            total_price = (barrel.quantity)*(barrel.price)
+            total_ml = (barrel.quantity)*(barrel.ml_per_barrel)
+            if barrel.potion_type[0] == 1 and row.gold >= total_price:
+                connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_red_ml = num_red_ml + :ml"), {"ml": total_ml})
+                connection.execute(sqlalchemy.text("UPDATE global_inventory SET gold = gold - :price"), {"price": total_price})
+
+            #Check if potion type is green
+            elif barrel.potion_type[1] == 1 and row.gold >= total_price:
+                connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_green_ml = num_green_ml + :ml"), {"ml": total_ml})
+                connection.execute(sqlalchemy.text("UPDATE global_inventory SET gold = gold - :price"), {"price": total_price})
 
             #Checks if potion type is blue
             elif barrel.potion_type[2] == 1:
-                connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_blue_ml = num_blue_ml + :ml"), {"ml": barrel.ml_per_barrel})
+                connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_blue_ml = num_blue_ml + :ml"), {"ml": total_ml})
+                connection.execute(sqlalchemy.text("UPDATE global_inventory SET gold = gold - :price"), {"price": total_price})
+
             
             """
             
@@ -96,46 +108,88 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     
     #For later versions
     """
-    elif row.num_red_potions < 10 and row.num_green_potions < 10 and not(row.num_blue_potions < 10):
+    result = connection.execute(sqlalchemy.text("SELECT * FROM global_inventory"))
+
+    row = result.fetchone()
+
+    #Checks that potions are available
+    if row.num_green_ml == 0:
         return [
-            {
-                "sku": "SMALL_RED_BARREL",
-                "quantity": 1,
-            },
-            
             {
                 "sku": "SMALL_GREEN_BARREL",
                 "quantity": 1,
             }
         ]
     
-    elif row.num_green_potions < 10 and row.num_blue_potions < 10 and not(row.num_red_potions < 10):
+    elif row.num_red_ml == 0:
+        return [
+            {
+                "sku": "SMALL_RED_BARREL",
+                "quantity": 1,
+            }
+        ]
+    
+    elif row.num_blue_ml == 0:
         return [
             {
                 "sku": "SMALL_BLUE_BARREL",
                 "quantity": 1,
-            },
+            }
+        ]
+    
+    #Checks if there's a potion that's less than others
 
+    elif row.red_potions_bought > row.green_potions_bought and row.red_potions_bought > row.blue_potions_bought:
+        return [
+            {
+                "sku": "SMALL_RED_BARREL",
+                "quantity": 1,
+            }
+        ]
+    
+    elif row.green_potions_bought > row.red_potions_bought and row.green_potions_bought > row.blue_potions_bought:
+        return [
             {
                 "sku": "SMALL_GREEN_BARREL",
                 "quantity": 1,
             }
         ]
     
-    elif row.num_red_potions < 10 and row.num_blue_potions < 10 and not(row.num_green_potions < 10):
-         return [
-            {
-                "sku": "SMALL_RED_BARREL",
-                "quantity": 1,
-            },
-
+    elif row.blue_potions_bought > row.green_potions_bought and row.blue_potions_bought > row.red_potions_bought:
+        return [
             {
                 "sku": "SMALL_BLUE_BARREL",
                 "quantity": 1,
             }
         ]
 
-    else: return "NO BARRELS NEEDED"
+    elif row.red_potions_bought == row.green_potions_bought:
+        return [
+            {
+                "sku": "SMALL_RED_BARREL",
+                "quantity": 1,
+            }
+        ]
+    
+    elif row.green_potions_bought == row.blue_potions_bought:
+        return [
+            {
+                "sku": "SMALL_GREEN_BARREL",
+                "quantity": 1,
+            }
+        ]
+
+    elif row.red_potions_bought == row.blue_potions_bought:
+        return [
+            {
+                "sku": "SMALL_BLUE_BARREL",
+                "quantity": 1,
+            }
+        ]
+    
+    else: return []
+
+    
     
     
     """

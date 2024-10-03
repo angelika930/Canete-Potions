@@ -25,12 +25,22 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int
 
     for potion in potions_delivered:
         with db.engine.begin() as connection:
-            result = connection.execute(sqlalchemy.text("SELECT num_green_ml, num_green_potions, gold FROM global_inventory"))
+            result = connection.execute(sqlalchemy.text("SELECT * FROM global_inventory"))
             row = result.fetchone()
-            if row.num_green_ml >= 100:
+            if row.num_green_ml >= 100 and potion.potion_type == [0,100,0,0]:
                 connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_green_potions = num_green_potions + :green_potions"), {"green_potions": potion.quantity})
                 total_ml = 100*(potion.quantity)
                 connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_green_ml = num_green_ml - :potion_ml"), {"potion_ml": total_ml})
+
+            elif row.num_red_ml >= 100 and potion.potion_type == [100,0,0,0]:
+                connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_red_potions = num_red_potions + :red_potions"), {"red_potions": potion.quantity})
+                total_ml = 100*(potion.quantity)
+                connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_red_ml = num_red_ml - :potion_ml"), {"potion_ml": total_ml})
+            
+            elif row.num_blue_ml >= 100 and potion.potion_type == [0,0,100,0]:
+                connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_blue_potions = num_blue_potions + :blue_potions"), {"blue_potions": potion.quantity})
+                total_ml = 100*(potion.quantity)
+                connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_blue_ml = num_blue_ml - :potion_ml"), {"potion_ml": total_ml})
 
 
  
@@ -52,42 +62,39 @@ def get_bottle_plan():
     #blue_potion_quantity = row.num_blue_ml//100
 
     with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text("SELECT num_green_ml, num_green_potions, gold FROM global_inventory"))
+            result = connection.execute(sqlalchemy.text("SELECT * FROM global_inventory"))
+            row = result.fetchone()
+
+    bottle_plan = []
+    potion_dict = {
+                   'red': row.num_red_ml//100, 
+                   'green': row.num_green_ml//100, 
+                   'blue': row.num_blue_ml//100
+                  }
     
-    row = result.fetchone()
-    print(row.num_green_ml)
+    #Create dictionary of potion mapping
+    potion_mapping = {
+        'red': [100, 0, 0, 0],
+        'green': [0, 100, 0, 0], 
+        'blue': [0, 0, 100, 0],
+        
+         }
+
+    for potion, quantity in potion_dict.items():
+
+        if quantity >= 1:
+            bottle_plan.append(
+                {
+                    "potion_type": potion_mapping[potion],
+                    "quantity": quantity
+                },
+            )
+
+    return bottle_plan
+
     
-    green_potion_quantity = row.num_green_ml//100
-   
-
-    if green_potion_quantity >= 1:
-       
-        return [
-            {
-                "potion_type": [0, 100, 0, 0],
-                "quantity": green_potion_quantity
-            },
-        ]
-
-    else:
-        return []
 
 
-    
-
-    #For later 
-    """
-      {
-            "potion_type": [100, 0, 0, 0],
-            "quantity": red_potion_quantity,
-        },
-
-        {
-            "potion_type": [0, 0, 100, 0],
-            "quantity": blue_potion_quantity,
-        }
-    
-    """
     
    
     

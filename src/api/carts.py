@@ -8,7 +8,8 @@ from src import database as db
 #with db.engine.begin() as connection:
 #        result = connection.execute(sqlalchemy.text(sql_to_execute))
 
-
+cart_index = 0
+#addthis comment
 router = APIRouter(
     prefix="/carts",
     tags=["cart"],
@@ -78,7 +79,7 @@ class Customer(BaseModel):
     customer_name: str
     character_class: str
     level: int
-    cart_id: int
+    
 
 @router.post("/visits/{visit_id}")
 def post_visits(visit_id: int, customers: list[Customer]):
@@ -95,7 +96,9 @@ def post_visits(visit_id: int, customers: list[Customer]):
 @router.post("/")
 def create_cart(new_cart: Customer):
     """ """
-    return {"cart_id": "1"}
+
+    cart_index += 1
+    return {"cart_id": cart_index}
 
 
 class CartItem(BaseModel):

@@ -9,7 +9,9 @@ from src import database as db
 #        result = connection.execute(sqlalchemy.text(sql_to_execute))
 
 cart_index = 0
-#addthis comment
+cart_dict = {}
+
+
 router = APIRouter(
     prefix="/carts",
     tags=["cart"],
@@ -98,6 +100,7 @@ def create_cart(new_cart: Customer):
     """ """
 
     cart_index += 1
+    cart_dict[cart_index] = []
     return {"cart_id": cart_index}
 
 
@@ -108,7 +111,10 @@ class CartItem(BaseModel):
 @router.post("/{cart_id}/items/{item_sku}")
 def set_item_quantity(cart_id: int, item_sku: str, cart_item: CartItem):
     """ """
+    item = (item_sku, cart_item.quantity)
+    cart_dict[cart_id] = cart_dict[cart_id].append(item)
 
+    
     return {
     "success": "boolean"
     }
@@ -120,9 +126,20 @@ class CartCheckout(BaseModel):
 @router.post("/{cart_id}/checkout")
 def checkout(cart_id: int, cart_checkout: CartCheckout):
     """ """
-    with db.engine.begin() as connection:
-        connection.execute(sqlalchemy.text("UPDATE global_inventory SET gold = gold + 30"))
-        connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_green_potions = num_green_potions - 1"))
+    for sku, quantity in cart_dict[cart_id]:
+        with db.engine.begin() as connection:
+            if 'green' in sku or "GREEN" in sku:
+                connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_green_potions = num_green_potions - :total_potions"), {"total_potions": quantity})
+                connection.execute(sqlalchemy.text("UPDATE global_inventory SET gold = gold + :total_gold"), {"total_gold": 30*quantity})
+
+            elif 'red' in sku or "RED" in sku:
+                connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_red_potions = num_red_potions - :total_potions"), {"total_potions": quantity})
+                connection.execute(sqlalchemy.text("UPDATE global_inventory SET gold = gold + :total_gold"), {"total_gold": 30*quantity})
+
+            elif 'blue' in sku or "BLUE" in sku:
+                connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_blue_potions = num_blue_potions - :total_potions"), {"total_potions": quantity})
+                connection.execute(sqlalchemy.text("UPDATE global_inventory SET gold = gold + :total_gold"), {"total_gold": 30*quantity})
+
     print("CART CHECKOUT STRING: ", cart_checkout.payment)
     print("TEST?????: ", int(cart_checkout.payment))
 

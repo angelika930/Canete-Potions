@@ -69,82 +69,67 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
         result = connection.execute(sqlalchemy.text("SELECT * FROM global_inventory"))
         row = result.fetchone()
     
-    
+    desired_barrel = ""
+
     if row.num_red_ml == 0:
-        return [
-            {
-                "sku": "SMALL_RED_BARREL",
-                "quantity": 1,
-            }
-        ]
+        desired_barrel = "red"
     
     elif row.num_blue_ml == 0:
-        return [
-            {
-                "sku": "SMALL_BLUE_BARREL",
-                "quantity": 1,
-            }
-        ]
+        desired_barrel = "blue"
+        
 
     elif row.num_green_ml == 0:
-        return [
-            {
-                "sku": "SMALL_GREEN_BARREL",
-                "quantity": 1,
-            }
-        ]
-    
+        desired_barrel = "green"
+       
     #Checks if there's a potion that's bought more than others
 
     elif row.red_potions_bought > row.green_potions_bought and row.red_potions_bought > row.blue_potions_bought:
-        return [
-            {
-                "sku": "SMALL_RED_BARREL",
-                "quantity": 1,
-            }
-        ]
+        desired_barrel = "red"
     
     elif row.green_potions_bought > row.red_potions_bought and row.green_potions_bought > row.blue_potions_bought:
-        return [
-            {
-                "sku": "SMALL_GREEN_BARREL",
-                "quantity": 1,
-            }
-        ]
+        desired_barrel = "green"
     
     elif row.blue_potions_bought > row.green_potions_bought and row.blue_potions_bought > row.red_potions_bought:
-        return [
+        desired_barrel = "blue"
+
+    elif row.red_potions_bought == row.green_potions_bought:
+        desired_barrel = "red"
+    
+    elif row.green_potions_bought == row.blue_potions_bought:
+       desired_barrel = "green"
+
+    elif row.red_potions_bought == row.blue_potions_bought:
+       desired_barrel = "blue"
+    
+    else: desired_barrel = "none"
+
+    if desired_barrel == "none" or row.gold < 60:
+        return []
+
+    elif row.gold >= 60:
+        if desired_barrel == "red":
+            return [
+            {
+                "sku": "MINI_RED_BARREL",
+                "quantity": 1,
+            }
+        ]
+
+        elif desired_barrel == "blue":
+            return [
             {
                 "sku": "SMALL_BLUE_BARREL",
                 "quantity": 1,
             }
         ]
 
-    elif row.red_potions_bought == row.green_potions_bought:
-        return [
-            {
-                "sku": "SMALL_RED_BARREL",
-                "quantity": 1,
-            }
-        ]
-    
-    elif row.green_potions_bought == row.blue_potions_bought:
-        return [
+        else:
+            return [
             {
                 "sku": "SMALL_GREEN_BARREL",
                 "quantity": 1,
             }
         ]
-
-    elif row.red_potions_bought == row.blue_potions_bought:
-        return [
-            {
-                "sku": "SMALL_BLUE_BARREL",
-                "quantity": 1,
-            }
-        ]
-    
-    else: return []
 
     
     

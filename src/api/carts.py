@@ -99,6 +99,7 @@ def post_visits(visit_id: int, customers: list[Customer]):
 def create_cart(new_cart: Customer):
     """ """
     global cart_index
+    global cart_dict
     cart_index += 1
     cart_dict[cart_index] = []
     return {"cart_id": cart_index}
@@ -111,6 +112,8 @@ class CartItem(BaseModel):
 @router.post("/{cart_id}/items/{item_sku}")
 def set_item_quantity(cart_id: int, item_sku: str, cart_item: CartItem):
     """ """
+    global cart_index
+    global cart_dict
     item = (item_sku, cart_item.quantity)
     cart_dict[cart_id] = cart_dict[cart_id].append(item)
 
@@ -126,6 +129,8 @@ class CartCheckout(BaseModel):
 @router.post("/{cart_id}/checkout")
 def checkout(cart_id: int, cart_checkout: CartCheckout):
     """ """
+     
+    global cart_dict
     for sku, quantity in cart_dict[cart_id]:
         with db.engine.begin() as connection:
             if 'green' in sku or "GREEN" in sku:

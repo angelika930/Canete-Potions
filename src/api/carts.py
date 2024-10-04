@@ -98,7 +98,7 @@ def post_visits(visit_id: int, customers: list[Customer]):
 @router.post("/")
 def create_cart(new_cart: Customer):
     """ """
-
+    global cart_index
     cart_index += 1
     cart_dict[cart_index] = []
     return {"cart_id": cart_index}

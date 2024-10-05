@@ -115,7 +115,9 @@ def set_item_quantity(cart_id: int, item_sku: str, cart_item: CartItem):
     global cart_index
     global cart_dict
     item = (item_sku, cart_item.quantity)
-    cart_dict[cart_id] = cart_dict[cart_id].append(item)
+    cart_dict[cart_id].append(item)
+
+    print(cart_dict)
 
     
     return {
@@ -145,7 +147,7 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
                 connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_blue_potions = num_blue_potions - :total_potions"), {"total_potions": quantity})
                 connection.execute(sqlalchemy.text("UPDATE global_inventory SET gold = gold + :total_gold"), {"total_gold": 30*quantity})
 
-    print("CART CHECKOUT STRING: ", cart_checkout.payment)
-    print("TEST?????: ", int(cart_checkout.payment))
+    #print("CART CHECKOUT STRING: ", cart_checkout.payment)
+    #print("TEST?????: ", int(cart_checkout.payment))
 
 

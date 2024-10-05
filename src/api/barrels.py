@@ -50,7 +50,8 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
                 
                 elif barrel.potion_type == [0,0,1,0]:
                     connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_blue_ml = num_blue_ml + :ml"), {"ml": total_ml})
-            
+        
+        print(barrel.sku)            
     print("Current Gold: ", row.gold)
 
     #For later versions
@@ -107,6 +108,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
         return []
 
     elif row.gold >= 60:
+        print(desired_barrel)
         if desired_barrel == "red":
             return [
             {

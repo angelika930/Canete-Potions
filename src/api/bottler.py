@@ -89,7 +89,7 @@ def get_bottle_plan():
                     "quantity": quantity
                 },
             )
-
+    print(bottle_plan)
     return bottle_plan
 
     

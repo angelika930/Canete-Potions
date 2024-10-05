@@ -138,14 +138,17 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
             if 'green' in sku or "GREEN" in sku:
                 connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_green_potions = num_green_potions - :total_potions"), {"total_potions": quantity})
                 connection.execute(sqlalchemy.text("UPDATE global_inventory SET gold = gold + :total_gold"), {"total_gold": 30*quantity})
+                connection.execute(sqlalchemy.text("UPDATE global_inventory SET green_potions_bought = green_potions_bought + :total_potions"), {"total_potions": quantity})
 
             elif 'red' in sku or "RED" in sku:
                 connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_red_potions = num_red_potions - :total_potions"), {"total_potions": quantity})
                 connection.execute(sqlalchemy.text("UPDATE global_inventory SET gold = gold + :total_gold"), {"total_gold": 30*quantity})
+                connection.execute(sqlalchemy.text("UPDATE global_inventory SET red_potions_bought = red_potions_bought + :total_potions"), {"total_potions": quantity})
 
             elif 'blue' in sku or "BLUE" in sku:
                 connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_blue_potions = num_blue_potions - :total_potions"), {"total_potions": quantity})
                 connection.execute(sqlalchemy.text("UPDATE global_inventory SET gold = gold + :total_gold"), {"total_gold": 30*quantity})
+                connection.execute(sqlalchemy.text("UPDATE global_inventory SET blue_potions_bought = blue_potions_bought + :total_potions"), {"total_potions": quantity})
 
     #print("CART CHECKOUT STRING: ", cart_checkout.payment)
     #print("TEST?????: ", int(cart_checkout.payment))

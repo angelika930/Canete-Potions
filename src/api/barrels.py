@@ -39,21 +39,24 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
             total_price = (barrel.quantity)*(barrel.price)
 
             if row.gold >= total_price:
-                print((barrel.quantity)*(barrel.price))
+                print("total price: ", (barrel.quantity)*(barrel.price))
                 with db.engine.begin() as connection:
                   connection.execute(sqlalchemy.text("UPDATE global_inventory SET gold = gold - :price"), {"price": total_price})
                 total_ml = (barrel.quantity)*(barrel.ml_per_barrel)
 
                 if barrel.potion_type == [0,1,0,0]:
-                    connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_green_ml = num_green_ml + :ml"), {"ml": total_ml})
+                    with db.engine.begin() as connection:
+                        connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_green_ml = num_green_ml + :ml"), {"ml": total_ml})
 
                 elif barrel.potion_type == [1,0,0,0]:
-                    connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_red_ml = num_red_ml + :ml"), {"ml": total_ml})
+                    with db.engine.begin() as connection:
+                        connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_red_ml = num_red_ml + :ml"), {"ml": total_ml})
                 
                 elif barrel.potion_type == [0,0,1,0]:
-                    connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_blue_ml = num_blue_ml + :ml"), {"ml": total_ml})
+                    with db.engine.begin() as connection:
+                        connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_blue_ml = num_blue_ml + :ml"), {"ml": total_ml})
         
-        print(barrel.sku)            
+        print("Barrel sku: ", barrel.sku)            
     print("Current Gold: ", row.gold)
 
     #For later versions

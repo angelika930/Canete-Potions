@@ -36,10 +36,12 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
             #Update gold accordingly
             result = connection.execute(sqlalchemy.text("SELECT * FROM global_inventory"))
             row = result.fetchone()
+            total_price = (barrel.quantity)*(barrel.price)
 
-            if row.gold >= barrel.price:
-                update_gold = sqlalchemy.text("UPDATE global_inventory SET gold = gold - :price")
-                connection.execute(update_gold, {"price": (barrel.quantity)*(barrel.price)})
+            if row.gold >= total_price:
+                print((barrel.quantity)*(barrel.price))
+                with db.engine.begin() as connection:
+                  connection.execute(sqlalchemy.text("UPDATE global_inventory SET gold = gold - :price"), {"price": total_price})
                 total_ml = (barrel.quantity)*(barrel.ml_per_barrel)
 
                 if barrel.potion_type == [0,1,0,0]:

@@ -119,7 +119,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
         if desired_barrel == "red":
             return [
             {
-                "sku": "MINI_RED_BARREL",
+                "sku": "SMALL_RED_BARREL",
                 "quantity": 1,
             }
         ]

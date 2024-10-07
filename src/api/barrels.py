@@ -56,8 +56,10 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
                     with db.engine.begin() as connection:
                         connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_blue_ml = num_blue_ml + :ml"), {"ml": total_ml})
         
-        print("Barrel sku: ", barrel.sku)            
-    print("Current Gold: ", row.gold)
+        print("Barrel sku: ", barrel.sku)     
+    with db.engine.begin() as connection:     
+         row = result.fetchone() 
+         print("Current Gold: ", row.gold)
 
     #For later versions
 

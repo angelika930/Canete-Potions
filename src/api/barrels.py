@@ -58,6 +58,7 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
         
         print("Barrel sku: ", barrel.sku)     
     with db.engine.begin() as connection:     
+         result = connection.execute(sqlalchemy.text("SELECT gold FROM global_inventory"))
          row = result.fetchone() 
          print("Current Gold: ", row.gold)
 

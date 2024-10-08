@@ -114,7 +114,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     if desired_barrel == "none" or row.gold < 60:
         return []
 
-    elif row.gold >= 60:
+    elif row.gold >= 100:
         print(desired_barrel)
         if desired_barrel == "red":
             return [

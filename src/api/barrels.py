@@ -80,7 +80,19 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     
     desired_barrel = ""
 
+    barrel_buy = [
+         {
+                "sku": "MINI_RED_BARREL",
+                "quantity": 1,
+        },
 
+        {
+                "sku": "MINI_GREEN_BARREL",
+                "quantity": 1,
+            }
+
+
+    ]
 
     if row.num_red_potions == 0 and row.num_red_ml == 0:
         desired_barrel = "red"
@@ -118,30 +130,9 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
         return []
 
     elif row.gold >= 60:
-        print(desired_barrel)
-        if desired_barrel == "red":
-            return [
-            {
-                "sku": "SMALL_RED_BARREL",
-                "quantity": 1,
-            }
-        ]
-
-        elif desired_barrel == "blue":
-            return [
-            {
-                "sku": "MINI_BLUE_BARREL",
-                "quantity": 1,
-            }
-        ]
-
-        else:
-            return [
-            {
-                "sku": "SMALL_GREEN_BARREL",
-                "quantity": 1,
-            }
-        ]
+      return barrel_buy
+    
+    else: return desired_barrel
 
     
     

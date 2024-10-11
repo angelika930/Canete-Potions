@@ -80,12 +80,14 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     
     desired_barrel = ""
 
-    if row.num_blue_potions == 0 and row.num_blue_ml == 0:
-        desired_barrel = "blue"
-    
-    elif row.num_red_potions == 0 and row.num_red_ml == 0:
+
+
+    if row.num_red_potions == 0 and row.num_red_ml == 0:
         desired_barrel = "red"
         
+    elif row.num_blue_potions == 0 and row.num_blue_ml == 0:
+        desired_barrel = "blue"
+    
 
     elif row.num_green_potions == 0 and row.num_green_ml == 0:
         desired_barrel = "green"

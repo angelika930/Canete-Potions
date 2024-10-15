@@ -80,30 +80,55 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     
     desired_barrel = ""
 
-    barrel_buy = [
-         {
-                "sku": "MINI_RED_BARREL",
-                "quantity": 1,
-        },
+    barrel_dict = {
+                   'red':   {
+                        "sku": "SMALL_RED_BARREL", 
+                        "quantity": "1" 
+                    }, 
+                   'green':  {
+                        "sku": "SMALL_GREEN_BARREL", 
+                        "quantity": "1" 
+                    }, 
+                   'blue':  {
+                        "sku": "SMALL_BLUE_BARREL", 
+                        "quantity": "1" 
+                    }
+                  }
 
-        {
-                "sku": "MINI_GREEN_BARREL",
-                "quantity": 1,
-            }
+    if row.gold > 320:
 
-
-    ]
-
-    if row.num_red_potions == 0 and row.num_red_ml == 0:
-        desired_barrel = "red"
         
-    elif row.num_blue_potions == 0 and row.num_blue_ml == 0:
-        desired_barrel = "blue"
+        return [
+            {
+                "sku": "SMALL_RED_BARREL", 
+                "quantity": "1" 
+            },
+             {
+                "sku": "SMALL_BLUE_BARREL", 
+                "quantity": "1" 
+            },
+              {
+                "sku": "SMALL_GREEN_BARREL", 
+                "quantity": "1" 
+            }
+        ]
     
+    else:
+   
+    
+        if row.num_red_potions == 0 and row.num_red_ml == 0:
+            desired_barrel = "red"
+            
+        elif row.num_blue_potions == 0 and row.num_blue_ml == 0:
+            desired_barrel = "blue"
+        
 
-    elif row.num_green_potions == 0 and row.num_green_ml == 0:
-        desired_barrel = "green"
+        elif row.num_green_potions == 0 and row.num_green_ml == 0:
+            desired_barrel = "green"
+
+        else: return barrel_dict[desired_barrel]
        
+    """
     #Checks if there's a potion that's bought more than others
 
     elif row.red_potions_bought > row.green_potions_bought and row.red_potions_bought > row.blue_potions_bought:
@@ -129,10 +154,8 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     if desired_barrel == "none" or row.gold < 60:
         return []
 
-    elif row.gold >= 60:
-      return barrel_buy
+    """
     
-    else: return desired_barrel
 
     
     

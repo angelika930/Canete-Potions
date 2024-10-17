@@ -133,29 +133,53 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
     """ """
     total_potions_bought = 0
     total_gold_paid = 0
+
+    with db.engine.begin() as connection:
+        gold = connection.execute(sqlalchemy.text("SELECT gold FROM global_inventory"))
+        price = connection.execute(sqlalchemy.text("SELECT price FROM potion_options"))
+        sku_query = connection.execute(sqlalchemy.text("SELECT sku FROM potion_options"))
+
+    price_list = [p[0] for p in price]
+    sku_list = [s[0] for s in sku_query]
      
     global cart_dict
     for sku, quantity in cart_dict[cart_id]:
 
-        total_potions_bought += quantity
-        total_gold_paid += (40*quantity)
-
+       
         with db.engine.begin() as connection:
-            if 'green' in sku or "GREEN" in sku:
-                connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_green_potions = num_green_potions - :total_potions"), {"total_potions": quantity})
-                connection.execute(sqlalchemy.text("UPDATE global_inventory SET gold = gold + :total_gold"), {"total_gold": 40*quantity})
-                connection.execute(sqlalchemy.text("UPDATE global_inventory SET green_potions_bought = green_potions_bought + :total_potions"), {"total_potions": quantity})
+            if sku == sku_list[0]:
+                connection.execute(sqlalchemy.text("UPDATE potion_options SET quantity = quantity - :total_potions WHERE id = (SELECT id FROM potion_options ORDER BY id LIMIT 1"), {"total_potions": quantity})
+                connection.execute(sqlalchemy.text("UPDATE global_inventory SET gold = gold + :total_gold"), {"total_gold": price_list[0]*quantity})
+                total_gold_paid += price_list[0]*quantity
 
-            elif 'red' in sku or "RED" in sku:
-                connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_red_potions = num_red_potions - :total_potions"), {"total_potions": quantity})
-                connection.execute(sqlalchemy.text("UPDATE global_inventory SET gold = gold + :total_gold"), {"total_gold": 40*quantity})
-                connection.execute(sqlalchemy.text("UPDATE global_inventory SET red_potions_bought = red_potions_bought + :total_potions"), {"total_potions": quantity})
+            elif sku == sku_list[1]:
+                connection.execute(sqlalchemy.text("UPDATE potion_options SET quantity = quantity - :total_potions WHERE id = (SELECT id FROM potion_options ORDER BY id LIMIT 1 OFFSET 1"), {"total_potions": quantity})
+                connection.execute(sqlalchemy.text("UPDATE global_inventory SET gold = gold + :total_gold"), {"total_gold": price_list[1]*quantity})
+                total_gold_paid += price_list[1]*quantity
 
-            elif 'blue' in sku or "BLUE" in sku:
-                connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_blue_potions = num_blue_potions - :total_potions"), {"total_potions": quantity})
-                connection.execute(sqlalchemy.text("UPDATE global_inventory SET gold = gold + :total_gold"), {"total_gold": 40*quantity})
-                connection.execute(sqlalchemy.text("UPDATE global_inventory SET blue_potions_bought = blue_potions_bought + :total_potions"), {"total_potions": quantity})
+            elif sku == sku_list[2]:
+                connection.execute(sqlalchemy.text("UPDATE potion_options SET quantity = quantity - :total_potions WHERE id = (SELECT id FROM potion_options ORDER BY id LIMIT 1 OFFSET 2"), {"total_potions": quantity})
+                connection.execute(sqlalchemy.text("UPDATE global_inventory SET gold = gold + :total_gold"), {"total_gold": price_list[2]*quantity})
+                total_gold_paid += price_list[2]*quantity
+
+            elif sku == sku_list[3]:
+                connection.execute(sqlalchemy.text("UPDATE potion_options SET quantity = quantity - :total_potions WHERE id = (SELECT id FROM potion_options ORDER BY id LIMIT 1 OFFSET 3"), {"total_potions": quantity})
+                connection.execute(sqlalchemy.text("UPDATE global_inventory SET gold = gold + :total_gold"), {"total_gold": price_list[3]*quantity})
+                total_gold_paid += price_list[3]*quantity
             
+            elif sku == sku_list[4]:
+                connection.execute(sqlalchemy.text("UPDATE potion_options SET quantity = quantity - :total_potions WHERE id = (SELECT id FROM potion_options ORDER BY id LIMIT 1 OFFSET 4"), {"total_potions": quantity})
+                connection.execute(sqlalchemy.text("UPDATE global_inventory SET gold = gold + :total_gold"), {"total_gold": price_list[4]*quantity})
+                total_gold_paid += price_list[4]*quantity
+            
+            elif sku == sku_list[5]:
+                connection.execute(sqlalchemy.text("UPDATE potion_options SET quantity = quantity - :total_potions WHERE id = (SELECT id FROM potion_options ORDER BY id LIMIT 1 OFFSET 5"), {"total_potions": quantity})
+                connection.execute(sqlalchemy.text("UPDATE global_inventory SET gold = gold + :total_gold"), {"total_gold": price_list[5]*quantity})
+                total_gold_paid += price_list[5]*quantity
+
+            total_potions_bought += quantity
+
+
         print(sku)
     return {
         "total_potions_bought": total_potions_bought,

@@ -5,7 +5,7 @@ import sqlalchemy
 from src import database as db
 
 
-
+sell_green = True
 
 router = APIRouter(
     prefix="/barrels",
@@ -35,6 +35,7 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
         with db.engine.begin() as connection:
             #Update gold accordingly
             result = connection.execute(sqlalchemy.text("SELECT * FROM global_inventory"))
+           
             row = result.fetchone()
             total_price = (barrel.quantity)*(barrel.price)
 
@@ -71,6 +72,9 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
 # Gets called once a day
 @router.post("/plan")
 def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
+
+    global sell_green
+
     """ """
     print(wholesale_catalog)
 
@@ -78,24 +82,37 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
         result = connection.execute(sqlalchemy.text("SELECT * FROM global_inventory"))
         row = result.fetchone()
     
-    desired_barrel = ""
+    result = []
 
-    barrel_dict = {
-                   'red':   {
-                        "sku": "SMALL_RED_BARREL", 
-                        "quantity": "1" 
-                    }, 
-                   'green':  {
+    barrel_quantity = {'red': 0, 'blue': 0, 'green': 0}
+    barrel_prices = {'red': 100, 'green': 100, 'blue': 120}
+    budget = 0
+    colors_bought = []
+    
+
+    #If we are poor 
+    if row.gold < 120:
+        if sell_green:
+            sell_green = False
+            return  [
+                    {
                         "sku": "SMALL_GREEN_BARREL", 
                         "quantity": "1" 
-                    }, 
-                   'blue':  {
-                        "sku": "SMALL_BLUE_BARREL", 
+                    }
+            ]
+
+        else:
+            sell_green = True
+            return  [
+                    {
+                        "sku": "SMALL_RED_BARREL", 
                         "quantity": "1" 
                     }
-                  }
+            ]
+        
 
-    if row.gold > 320:
+    #If we are getting ourselves off the ground
+    elif row.gold > 320:
 
         
         return [
@@ -113,49 +130,69 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
             }
         ]
     
-    else:
-   
-    
-        if row.num_red_potions == 0 and row.num_red_ml == 0:
-            desired_barrel = "red"
+    elif row.gold > 600:
+
+        #Determine what color barrels to buy
+        if row.num_green_ml < 1000:
+            colors_bought.append('green')
+        if row.num_blue_ml < 1000:
+            colors_bought.append('blue')
+        if row.num_red_ml < 1000:
+            colors_bought.append('red')
+
+
+        #Determine what barrel budget is
+        if len(colors_bought) == 0:
+            return []
+        elif len(colors_bought) == 1:
+            budget = 200
+        elif len(colors_bought) == 2:
+            budget = 400
+        else: budget = 600
+
+        #buy as many barrels as possible, iterating through colors in colors_bought array
+        index = 0
+        price_of_barrel = barrel_prices[colors_bought[index]]
+        while  budget - price_of_barrel  >= 0:
+            if colors_bought[index] == 'red':
+                barrel_quantity['red'] += 1
             
-        elif row.num_blue_potions == 0 and row.num_blue_ml == 0:
-            desired_barrel = "blue"
+            elif colors_bought[index] == 'blue':
+                barrel_quantity['blue'] += 1
+
+            elif colors_bought[index] == 'green':
+                barrel_quantity['green'] += 1
+
+            index += 1
+            if index >= len(colors_bought):
+                index = 0
+
+            price_of_barrel = barrel_prices[colors_bought[index]]
+
+
+        #Return json response
+        for i in range(len(colors_bought)):
+            if colors_bought[i] == 'red':
+                result.append( {
+                        "sku": "SMALL_RED_BARREL", 
+                        "quantity": barrel_quantity['red'] 
+                    },)
+            
+            elif colors_bought[i] == 'blue':
+                result.append( {
+                        "sku": "SMALL_BLUE_BARREL", 
+                        "quantity": barrel_quantity['blue'] 
+                    },)
+                
+            elif colors_bought[i] == 'green':
+                result.append( {
+                        "sku": "SMALL_GREEN_BARREL", 
+                        "quantity": barrel_quantity['green'] 
+                    },)
         
+        return result
 
-        elif row.num_green_potions == 0 and row.num_green_ml == 0:
-            desired_barrel = "green"
 
-        else: return barrel_dict[desired_barrel]
-       
-    """
-    #Checks if there's a potion that's bought more than others
-
-    elif row.red_potions_bought > row.green_potions_bought and row.red_potions_bought > row.blue_potions_bought:
-        desired_barrel = "red"
-    
-    elif row.green_potions_bought > row.red_potions_bought and row.green_potions_bought > row.blue_potions_bought:
-        desired_barrel = "green"
-    
-    elif row.blue_potions_bought > row.green_potions_bought and row.blue_potions_bought > row.red_potions_bought:
-        desired_barrel = "blue"
-
-    elif row.red_potions_bought == row.green_potions_bought:
-        desired_barrel = "red"
-    
-    elif row.green_potions_bought == row.blue_potions_bought:
-       desired_barrel = "green"
-
-    elif row.red_potions_bought == row.blue_potions_bought:
-       desired_barrel = "blue"
-    
-    else: desired_barrel = "none"
-
-    if desired_barrel == "none" or row.gold < 60:
-        return []
-
-    """
-    
 
     
     

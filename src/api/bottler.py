@@ -27,22 +27,42 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int
         with db.engine.begin() as connection:
             result = connection.execute(sqlalchemy.text("SELECT * FROM global_inventory"))
             row = result.fetchone()
-            if row.num_green_ml >= 100 and potion.potion_type == [0,100,0,0]:
-                connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_green_potions = num_green_potions + :green_potions"), {"green_potions": potion.quantity})
-                total_ml = 100*(potion.quantity)
-                connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_green_ml = num_green_ml - :potion_ml"), {"potion_ml": total_ml})
+            potion_types = connection.execute(sqlalchemy.text("SELECT potion_type FROM potion_options"))
+            list_types =  [potion_type[0] for potion_type in potion_types]
 
-            elif row.num_red_ml >= 100 and potion.potion_type == [100,0,0,0]:
-                connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_red_potions = num_red_potions + :red_potions"), {"red_potions": potion.quantity})
-                total_ml = 100*(potion.quantity)
-                connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_red_ml = num_red_ml - :potion_ml"), {"potion_ml": total_ml})
+
+
+            if potion.potion_type == list_types[0]:
+                connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_red_ml = num_red_ml - :potion_red_amount, num_green_ml = num_green_ml - :potion_green_amount, num_blue_ml = num_blue_ml - :potion_blue_amount, num_dark_ml = num_dark_ml - :potion_dark_amount "), 
+                                   {"potion_red_amount": list_types[0][0], "potion_green_amount": list_types[0][1], "potion_blue_amount": list_types[0][2], "potion_dark_amount": list_types[0][3]})
+                connection.execute(sqlalchemy.text("UPDATE potion_options SET quantity = quantity + :potion_quantity WHERE id = (SELECT id FROM potion_options ORDER BY id LIMIT 1);"), {"potion_quantity": potion.quantity})
+
+            elif potion.potion_type == list_types[1]:
+                connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_red_ml = num_red_ml - :potion_red_amount, num_green_ml = num_green_ml - :potion_green_amount, num_blue_ml = num_blue_ml - :potion_blue_amount, num_dark_ml = num_dark_ml - :potion_dark_amount "), 
+                                   {"potion_red_amount": list_types[1][0], "potion_green_amount": list_types[1][1], "potion_blue_amount": list_types[1][2], "potion_dark_amount": list_types[1][3]})
+                connection.execute(sqlalchemy.text("UPDATE potion_options SET quantity = quantity + :potion_quantity WHERE id = (SELECT id FROM potion_options ORDER BY id LIMIT 1 OFFSET 1);"), {"potion_quantity": potion.quantity})
             
-            elif row.num_blue_ml >= 100 and potion.potion_type == [0,0,100,0]:
-                connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_blue_potions = num_blue_potions + :blue_potions"), {"blue_potions": potion.quantity})
-                total_ml = 100*(potion.quantity)
-                connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_blue_ml = num_blue_ml - :potion_ml"), {"potion_ml": total_ml})
+            elif potion.potion_type == list_types[2]:
+                connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_red_ml = num_red_ml - :potion_red_amount, num_green_ml = num_green_ml - :potion_green_amount, num_blue_ml = num_blue_ml - :potion_blue_amount, num_dark_ml = num_dark_ml - :potion_dark_amount "), 
+                                   {"potion_red_amount": list_types[2][0], "potion_green_amount": list_types[2][1], "potion_blue_amount": list_types[2][2], "potion_dark_amount": list_types[2][3]})
+                connection.execute(sqlalchemy.text("UPDATE potion_options SET quantity = quantity + :potion_quantity WHERE id = (SELECT id FROM potion_options ORDER BY id LIMIT 1 OFFSET 2);"), {"potion_quantity": potion.quantity})
+            
+            elif potion.potion_type == list_types[3]:
+                connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_red_ml = num_red_ml - :potion_red_amount, num_green_ml = num_green_ml - :potion_green_amount, num_blue_ml = num_blue_ml - :potion_blue_amount, num_dark_ml = num_dark_ml - :potion_dark_amount "), 
+                                    {"potion_red_amount": list_types[3][0], "potion_green_amount": list_types[3][1], "potion_blue_amount": list_types[3][2], "potion_dark_amount": list_types[3][3]})
+                connection.execute(sqlalchemy.text("UPDATE potion_options SET quantity = quantity + :potion_quantity WHERE id = (SELECT id FROM potion_options ORDER BY id LIMIT 1 OFFSET 3);"), {"potion_quantity": potion.quantity})
 
+            elif potion.potion_type == list_types[4]:
+                connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_red_ml = num_red_ml - :potion_red_amount, num_green_ml = num_green_ml - :potion_green_amount, num_blue_ml = num_blue_ml - :potion_blue_amount, num_dark_ml = num_dark_ml - :potion_dark_amount "), 
+                                    {"potion_red_amount": list_types[4][0], "potion_green_amount": list_types[4][1], "potion_blue_amount": list_types[4][2], "potion_dark_amount": list_types[4][3]})
+                connection.execute(sqlalchemy.text("UPDATE potion_options SET quantity = quantity + :potion_quantity WHERE id = (SELECT id FROM potion_options ORDER BY id LIMIT 1 OFFSET 4);"), {"potion_quantity": potion.quantity})
 
+            elif potion.potion_type == list_types[5]:
+                connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_red_ml = num_red_ml - :potion_red_amount, num_green_ml = num_green_ml - :potion_green_amount, num_blue_ml = num_blue_ml - :potion_blue_amount, num_dark_ml = num_dark_ml - :potion_dark_amount "), 
+                                   {"potion_red_amount": list_types[5][0], "potion_green_amount": list_types[5][1], "potion_blue_amount": list_types[5][2], "potion_dark_amount": list_types[5][3]})
+                connection.execute(sqlalchemy.text("UPDATE potion_options SET quantity = quantity + :potion_quantity WHERE id = (SELECT id FROM potion_options ORDER BY id LIMIT 1 OFFSET 5);"), {"potion_quantity": potion.quantity})
+
+            
  
     return []
 
@@ -66,11 +86,7 @@ def get_bottle_plan():
             row = result.fetchone()
 
     bottle_plan = []
-    potion_dict = {
-                   'red': row.num_red_ml//100, 
-                   'green': row.num_green_ml//100, 
-                   'blue': row.num_blue_ml//100
-                  }
+    
     
     #Create dictionary of potion mapping
     potion_mapping = {
@@ -79,16 +95,55 @@ def get_bottle_plan():
         'blue': [0, 0, 100, 0],
         
          }
+    
+    #pull how much red, green, and blue ml needed for all potions and grab number of potions being grabbed
+    with db.engine.begin() as connection:
+            red_ml_query = connection.execute(sqlalchemy.text("SELECT red FROM potion_options"))
+            green_ml_query = connection.execute(sqlalchemy.text("SELECT green FROM potion_options"))
+            blue_ml_query = connection.execute(sqlalchemy.text("SELECT blue FROM potion_options"))
+            potion_types = connection.execute(sqlalchemy.text("SELECT potion_type FROM potion_options"))
+            row_count =  connection.execute(sqlalchemy.text("SELECT COUNT(*) FROM potion_options"))
+        
 
-    for potion, quantity in potion_dict.items():
+    # Extract values from the result
+    red_quantity = [potion_type[0] for potion_type in red_ml_query]
+    blue_quantity = [potion_type[0] for potion_type in blue_ml_query]
+    green_quantity = [potion_type[0] for potion_type in green_ml_query]
+    list_types =  [potion_type[0] for potion_type in potion_types]
+   
+    row_count = row_count.scalar()
+ 
 
-        if quantity >= 1:
-            bottle_plan.append(
-                {
-                    "potion_type": potion_mapping[potion],
-                    "quantity": quantity
-                },
-            )
+
+    #Find remaining ml
+    remaining_red = row.num_red_ml
+    remaining_blue = row.num_blue_ml
+    remaining_green = row.num_green_ml
+
+    quantity_dict = {0 : 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0}
+
+   #Find how much of each bottle can be bottled
+
+    count = 0
+    while (remaining_red - red_quantity[count] >= 0 and remaining_blue - blue_quantity[count] >= 0 and remaining_green - green_quantity[count] >= 0):    
+        quantity_dict[count] += 1
+
+        count += 1
+      
+
+        if (count == row.count):
+            count = 0
+       
+            
+         
+    for i in range(row_count):
+
+        bottle_plan.append(
+            {
+                "potion_type": list_types[i],
+                "quantity": quantity_dict[i]
+            },
+        )
     print("Bottle plan: ", bottle_plan)
     return bottle_plan
 

@@ -189,7 +189,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
                         "sku": "SMALL_GREEN_BARREL", 
                         "quantity": barrel_quantity['green'] 
                     },)
-        
+        print("BARRELS WANTED: ", result)
         return result
 
 

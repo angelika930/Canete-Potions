@@ -137,13 +137,13 @@ def get_bottle_plan():
             
          
     for i in range(row_count):
-
-        bottle_plan.append(
-            {
-                "potion_type": list_types[i],
-                "quantity": quantity_dict[i]
-            },
-        )
+        if quantity_dict[i] != 0:
+            bottle_plan.append(
+                {
+                    "potion_type": list_types[i],
+                    "quantity": quantity_dict[i]
+                },
+            )
     print("Bottle plan: ", bottle_plan)
     return bottle_plan
 

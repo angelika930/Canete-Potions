@@ -91,7 +91,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     
 
     #If we are poor 
-    if row.gold < 120:
+    if row.gold >= 100 and row.gold < 120:
         if sell_green:
             sell_green = False
             return  [

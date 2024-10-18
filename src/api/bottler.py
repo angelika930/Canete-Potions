@@ -120,6 +120,10 @@ def get_bottle_plan():
     remaining_blue = row.num_blue_ml
     remaining_green = row.num_green_ml
 
+    print("REMAINING RED: ", remaining_red)
+    print("REMAINING BLUE: ", remaining_blue)
+    print("REMAINING GREEN: ", remaining_green)
+    
     quantity_dict = {0 : 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0}
 
    #Find how much of each bottle can be bottled
@@ -129,6 +133,14 @@ def get_bottle_plan():
         quantity_dict[count] += 1
 
         count += 1
+        print("COUNT: ", count)
+
+        print("RED_QUANTITY [COUNT]: ", red_quantity[count])
+        print("GREEN_QUANTITY [COUNT]: ", green_quantity[count])
+        print("BLUE_QUANTITY [COUNT]: ", blue_quantity[count])
+        print("QUANTITY _DICT: ", quantity_dict[count])
+
+        
       
 
         if (count == row.count):

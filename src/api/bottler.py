@@ -112,6 +112,7 @@ def get_bottle_plan():
     list_types =  [potion_type[0] for potion_type in potion_types]
    
     row_count = row_count.scalar()
+    print("Row count: ", row_count)
  
 
 
@@ -139,9 +140,6 @@ def get_bottle_plan():
         print("GREEN_QUANTITY [COUNT]: ", green_quantity[count])
         print("BLUE_QUANTITY [COUNT]: ", blue_quantity[count])
         print("QUANTITY _DICT: ", quantity_dict[count])
-
-        
-      
 
         if (count == row.count):
             count = 0

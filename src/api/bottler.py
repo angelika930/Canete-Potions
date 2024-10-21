@@ -21,48 +21,63 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int
     """ """
     print(f"potions delievered: {potions_delivered} order_id: {order_id}")
 
+    red_ml_change = 0
+    green_ml_change = 0
+    blue_ml_change = 0
+    dark_ml_change = 0
+    with db.engine.begin() as connection:
+        result = connection.execute(sqlalchemy.text("SELECT * FROM global_inventory"))
+        row = result.fetchone()
+        potion_types = connection.execute(sqlalchemy.text("SELECT potion_type FROM potion_options"))
+        list_types =  [potion_type[0] for potion_type in potion_types]
+    
+        potions_to_add = {1: 0,
+                          2: 0,
+                          3: 0,
+                          4: 0,
+                          5: 0,
+                          6: 0}
+        
+        potion_variety = [list_types[0], list_types[1], list_types[2], list_types[3], list_types[4], list_types[5]]
+        
 
-
-    for potion in potions_delivered:
-        with db.engine.begin() as connection:
-            result = connection.execute(sqlalchemy.text("SELECT * FROM global_inventory"))
-            row = result.fetchone()
-            potion_types = connection.execute(sqlalchemy.text("SELECT potion_type FROM potion_options"))
-            list_types =  [potion_type[0] for potion_type in potion_types]
-
-
+        
+        for potion in potions_delivered:
+            red_ml_change += potion.potion_type[0] * potion.quantity
+            green_ml_change += potion.potion_type[1] * potion.quantity
+            blue_ml_change += potion.potion_type[2] * potion.quantity
+            dark_ml_change += potion.potion_type[3] * potion.quantity
 
             if potion.potion_type == list_types[0]:
-                connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_red_ml = num_red_ml - :potion_red_amount, num_green_ml = num_green_ml - :potion_green_amount, num_blue_ml = num_blue_ml - :potion_blue_amount, num_dark_ml = num_dark_ml - :potion_dark_amount "), 
-                                   {"potion_red_amount": list_types[0][0], "potion_green_amount": list_types[0][1], "potion_blue_amount": list_types[0][2], "potion_dark_amount": list_types[0][3]})
-                connection.execute(sqlalchemy.text("UPDATE potion_options SET quantity = quantity + :potion_quantity WHERE id = (SELECT id FROM potion_options ORDER BY id LIMIT 1);"), {"potion_quantity": potion.quantity})
-
+                potions_to_add[1] += potion.quantity
+            
             elif potion.potion_type == list_types[1]:
-                connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_red_ml = num_red_ml - :potion_red_amount, num_green_ml = num_green_ml - :potion_green_amount, num_blue_ml = num_blue_ml - :potion_blue_amount, num_dark_ml = num_dark_ml - :potion_dark_amount "), 
-                                   {"potion_red_amount": list_types[1][0], "potion_green_amount": list_types[1][1], "potion_blue_amount": list_types[1][2], "potion_dark_amount": list_types[1][3]})
-                connection.execute(sqlalchemy.text("UPDATE potion_options SET quantity = quantity + :potion_quantity WHERE id = (SELECT id FROM potion_options ORDER BY id LIMIT 1 OFFSET 1);"), {"potion_quantity": potion.quantity})
+                potions_to_add[2] += potion.quantity
             
             elif potion.potion_type == list_types[2]:
-                connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_red_ml = num_red_ml - :potion_red_amount, num_green_ml = num_green_ml - :potion_green_amount, num_blue_ml = num_blue_ml - :potion_blue_amount, num_dark_ml = num_dark_ml - :potion_dark_amount "), 
-                                   {"potion_red_amount": list_types[2][0], "potion_green_amount": list_types[2][1], "potion_blue_amount": list_types[2][2], "potion_dark_amount": list_types[2][3]})
-                connection.execute(sqlalchemy.text("UPDATE potion_options SET quantity = quantity + :potion_quantity WHERE id = (SELECT id FROM potion_options ORDER BY id LIMIT 1 OFFSET 2);"), {"potion_quantity": potion.quantity})
+                potions_to_add[3] += potion.quantity
             
             elif potion.potion_type == list_types[3]:
-                connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_red_ml = num_red_ml - :potion_red_amount, num_green_ml = num_green_ml - :potion_green_amount, num_blue_ml = num_blue_ml - :potion_blue_amount, num_dark_ml = num_dark_ml - :potion_dark_amount "), 
-                                    {"potion_red_amount": list_types[3][0], "potion_green_amount": list_types[3][1], "potion_blue_amount": list_types[3][2], "potion_dark_amount": list_types[3][3]})
-                connection.execute(sqlalchemy.text("UPDATE potion_options SET quantity = quantity + :potion_quantity WHERE id = (SELECT id FROM potion_options ORDER BY id LIMIT 1 OFFSET 3);"), {"potion_quantity": potion.quantity})
-
+                potions_to_add[4] += potion.quantity
+            
             elif potion.potion_type == list_types[4]:
-                connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_red_ml = num_red_ml - :potion_red_amount, num_green_ml = num_green_ml - :potion_green_amount, num_blue_ml = num_blue_ml - :potion_blue_amount, num_dark_ml = num_dark_ml - :potion_dark_amount "), 
-                                    {"potion_red_amount": list_types[4][0], "potion_green_amount": list_types[4][1], "potion_blue_amount": list_types[4][2], "potion_dark_amount": list_types[4][3]})
-                connection.execute(sqlalchemy.text("UPDATE potion_options SET quantity = quantity + :potion_quantity WHERE id = (SELECT id FROM potion_options ORDER BY id LIMIT 1 OFFSET 4);"), {"potion_quantity": potion.quantity})
+                potions_to_add[5] += potion.quantity
 
             elif potion.potion_type == list_types[5]:
-                connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_red_ml = num_red_ml - :potion_red_amount, num_green_ml = num_green_ml - :potion_green_amount, num_blue_ml = num_blue_ml - :potion_blue_amount, num_dark_ml = num_dark_ml - :potion_dark_amount "), 
-                                   {"potion_red_amount": list_types[5][0], "potion_green_amount": list_types[5][1], "potion_blue_amount": list_types[5][2], "potion_dark_amount": list_types[5][3]})
-                connection.execute(sqlalchemy.text("UPDATE potion_options SET quantity = quantity + :potion_quantity WHERE id = (SELECT id FROM potion_options ORDER BY id LIMIT 1 OFFSET 5);"), {"potion_quantity": potion.quantity})
+                potions_to_add[6] += potion.quantity
 
-            
+        print("before connection")
+        with db.engine.begin() as connection:    
+            connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_red_ml = num_red_ml - :potion_red_amount, num_green_ml = num_green_ml - :potion_green_amount, num_blue_ml = num_blue_ml - :potion_blue_amount,  num_dark_ml = num_dark_ml - :potion_dark_amount"), {"potion_red_amount":red_ml_change, "potion_green_amount": green_ml_change, "potion_blue_amount": blue_ml_change, "potion_dark_amount": dark_ml_change})
+
+            #update potion quantities         
+            connection.execute(sqlalchemy.text(" UPDATE potion_options SET quantity = quantity + :quantity WHERE id = 1"), {"quantity": potions_to_add[1]})
+            connection.execute(sqlalchemy.text(" UPDATE potion_options SET quantity = quantity + :quantity WHERE id = 2"), {"quantity": potions_to_add[2]})
+            connection.execute(sqlalchemy.text(" UPDATE potion_options SET quantity = quantity + :quantity WHERE id = 3"), {"quantity": potions_to_add[3]})
+            connection.execute(sqlalchemy.text(" UPDATE potion_options SET quantity = quantity + :quantity WHERE id = 4"), {"quantity": potions_to_add[4]})
+            connection.execute(sqlalchemy.text(" UPDATE potion_options SET quantity = quantity + :quantity WHERE id = 5"), {"quantity": potions_to_add[5]})
+            connection.execute(sqlalchemy.text(" UPDATE potion_options SET quantity = quantity + :quantity WHERE id = 6"), {"quantity": potions_to_add[6]})
+                                                    
  
     return []
 

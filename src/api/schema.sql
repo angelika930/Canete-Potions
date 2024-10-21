@@ -32,5 +32,5 @@ INSERT INTO potion_options (id, name, potion_type, red, green, blue, dark, quant
  (2, 'Christmas Potion', '{33, 33, 33,0}', 33, 33, 34, 0, 0, 80),
  (3, 'Earth Potion', '{50, 30, 20, 0}', 50, 30, 20, 0, 0, 60),
  (4, 'Purple Potion', '{50, 0, 50,0}', 50, 0, 50, 0, 0, 70),
- (5, 'Brown Potion', '{50, 50, 0,0}', 50, 50, 0, 0, 0, 60),
+ (5, 'Red Potion', '{100, 0, 0,0}', 100, 0, 0, 0, 0, 60),
  (6, 'Green Potion', '{0, 100, 0,0}', 0, 100, 0, 0, 0, 60);

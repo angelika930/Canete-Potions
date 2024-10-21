@@ -6,6 +6,9 @@ import sqlalchemy
 from src import database as db
 
 
+global has_ml
+has_ml = True
+
 router = APIRouter(
     prefix="/bottler",
     tags=["bottler"],
@@ -87,6 +90,8 @@ def get_bottle_plan():
     Go from barrel to bottle.
     """
 
+    global has_ml
+
     # Each bottle has a quantity of what proportion of red, blue, and
     # green potion to add.
     # Expressed in integers from 1 to 100 that must sum up to 100.
@@ -102,55 +107,58 @@ def get_bottle_plan():
 
     bottle_plan = []
     
-    
-    #Create dictionary of potion mapping
-    potion_mapping = {
-        'red': [100, 0, 0, 0],
-        'green': [0, 100, 0, 0], 
-        'blue': [0, 0, 100, 0],
-        
-         }
-    
-    #pull how much red, green, and blue ml needed for all potions and grab number of potions being grabbed
-    with db.engine.begin() as connection:
-            red_ml_query = connection.execute(sqlalchemy.text("SELECT red FROM potion_options"))
-            green_ml_query = connection.execute(sqlalchemy.text("SELECT green FROM potion_options"))
-            blue_ml_query = connection.execute(sqlalchemy.text("SELECT blue FROM potion_options"))
-            dark_ml_query = connection.execute(sqlalchemy.text("SELECT dark FROM potion_options"))
-            potion_types = connection.execute(sqlalchemy.text("SELECT potion_type FROM potion_options"))
-            row_count =  connection.execute(sqlalchemy.text("SELECT COUNT(*) FROM potion_options"))
-        
+    red_quantity = []
+    blue_quantity = []
+    green_quantity = []
+    dark_quantity = []
+    potion_options = []
 
-    # Extract values from the result
-    red_quantity = [potion_type[0] for potion_type in red_ml_query]
-    blue_quantity = [potion_type[0] for potion_type in blue_ml_query]
-    green_quantity = [potion_type[0] for potion_type in green_ml_query]
-    dark_quantity = [potion_type[0] for potion_type in dark_ml_query]
-    list_types =  [potion_type[0] for potion_type in potion_types]
-   
-    row_count = row_count.scalar()
-    print("Row count: ", row_count)
- 
-
+    quantity_dict = {}
 
     #Find remaining ml
     remaining_red = row.num_red_ml
     remaining_blue = row.num_blue_ml
     remaining_green = row.num_green_ml
-
-    print("REMAINING RED: ", remaining_red)
-    print("REMAINING BLUE: ", remaining_blue)
-    print("REMAINING GREEN: ", remaining_green)
+    remaining_dark = row.num_dark_ml
     
-    quantity_dict = {0 : 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0}
+    #pull how much red, green, and blue ml needed for all potions and grab number of potions being grabbed
+    with db.engine.begin() as connection:
+            potion_types = connection.execute(sqlalchemy.text("SELECT red, green, blue, dark, potion_type FROM potion_options")).fetchall()
+    
+    print("potion_types: ", potion_types)
 
-   #Find how much of each bottle can be bottled
-    print("BLUE QUANTITY: ", blue_quantity)
-    print("RED QUANTITY: ", red_quantity)
-    print("GREEN QUANTITY: ", green_quantity)
-    print("DARK QUANTITY: ", dark_quantity)
-
+    for i in range(len(potion_types)):
+        potion_options.append(potion_types[i][4])
+    
+    
     count = 0
+
+    #Checks each potion to see how much ml can be used 
+    
+    while remaining_red >= 10 and remaining_blue >= 10 and remaining_green >= 10:
+        for i in range(6):
+            
+            if (remaining_red - potion_options[i][0] >= 0 and remaining_green - potion_options[i][1] >= 0 and remaining_blue - potion_options[i][2] >= 0  and remaining_dark - potion_options[i][3] >= 0):
+                remaining_red -= potion_options[i][0]
+                remaining_green -= potion_options[i][1]
+                remaining_blue -= potion_options[i][2]
+                remaining_dark -= potion_options[i][3]
+
+
+                if potion_options[i] not in quantity_dict:
+                    quantity_dict[potion_options[i]] = 1
+                
+                elif potion_options[i] in quantity_dict:
+                    quantity_dict[potion_options[i]] += 1
+
+            else:
+                has_ml = True
+                break
+        
+        if has_ml: break
+         
+    """
+
     while (remaining_red - red_quantity[count] >= 0 and remaining_blue - blue_quantity[count] >= 0 and remaining_green - green_quantity[count] >= 0):    
         quantity_dict[count] += 1
 
@@ -165,14 +173,14 @@ def get_bottle_plan():
         if (count == row.count):
             count = 0
        
-            
+    """
          
-    for i in range(row_count):
-        if quantity_dict[i] != 0:
+    for key, value in quantity_dict.items():
+        if value > 0:
             bottle_plan.append(
                 {
-                    "potion_type": list_types[i],
-                    "quantity": quantity_dict[i]
+                    "potion_type": key,
+                    "quantity": value
                 },
             )
     print("Bottle plan: ", bottle_plan)

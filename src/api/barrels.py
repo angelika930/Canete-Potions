@@ -85,7 +85,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
             sell_green = False
             return  [
                     {
-                        "sku": "SMALL_GREEN_BARREL", 
+                        "sku": "MINI_GREEN_BARREL", 
                         "quantity": 1 
                     }
             ]
@@ -94,11 +94,23 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
             sell_green = True
             return  [
                     {
-                        "sku": "SMALL_RED_BARREL", 
+                        "sku": "MINI_RED_BARREL", 
                         "quantity": 1
                     }
             ]
         
+    elif row.gold >= 120 and row.gold < 320:
+         return  [
+                    {
+                        "sku": "MINI_GREEN_BARREL", 
+                        "quantity": 1 
+                    },
+                     {
+                        "sku": "MINI_RED_BARREL", 
+                        "quantity": 1
+                    }
+
+            ]
 
     #If we are getting ourselves off the ground
     elif row.gold > 320:

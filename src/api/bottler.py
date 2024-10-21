@@ -116,6 +116,7 @@ def get_bottle_plan():
             red_ml_query = connection.execute(sqlalchemy.text("SELECT red FROM potion_options"))
             green_ml_query = connection.execute(sqlalchemy.text("SELECT green FROM potion_options"))
             blue_ml_query = connection.execute(sqlalchemy.text("SELECT blue FROM potion_options"))
+            dark_ml_query = connection.execute(sqlalchemy.text("SELECT dark FROM potion_options"))
             potion_types = connection.execute(sqlalchemy.text("SELECT potion_type FROM potion_options"))
             row_count =  connection.execute(sqlalchemy.text("SELECT COUNT(*) FROM potion_options"))
         
@@ -124,6 +125,7 @@ def get_bottle_plan():
     red_quantity = [potion_type[0] for potion_type in red_ml_query]
     blue_quantity = [potion_type[0] for potion_type in blue_ml_query]
     green_quantity = [potion_type[0] for potion_type in green_ml_query]
+    dark_quantity = [potion_type[0] for potion_type in dark_ml_query]
     list_types =  [potion_type[0] for potion_type in potion_types]
    
     row_count = row_count.scalar()
@@ -143,6 +145,10 @@ def get_bottle_plan():
     quantity_dict = {0 : 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0}
 
    #Find how much of each bottle can be bottled
+    print("BLUE QUANTITY: ", blue_quantity)
+    print("RED QUANTITY: ", red_quantity)
+    print("GREEN QUANTITY: ", green_quantity)
+    print("DARK QUANTITY: ", dark_quantity)
 
     count = 0
     while (remaining_red - red_quantity[count] >= 0 and remaining_blue - blue_quantity[count] >= 0 and remaining_green - green_quantity[count] >= 0):    

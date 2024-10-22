@@ -11,19 +11,23 @@ CREATE TABLE potion_options (
     price int
 );
 
-CREATE TABLE carts (
-    cart_id SERIAL PRIMARY KEY,
+CREATE TABLE customers (
+    customer_id SERIAL PRIMARY KEY,
     name text,
     character_class text,
     level integer
 );
 
 CREATE TABLE customer_cart (
-    customer_id SERIAL PRIMARY KEY,
-    cart_id integer,
+    customer_id INT,
+    cart_id INT,
     potion_name text,
-    quantity text
+    quantity text,
+    PRIMARY KEY (customer_id, cart_id),
+    FOREIGN KEY (customer_id) REFERENCES customers(customer_id)
 );
+
+
 
 -- Altering tables and inserting to tables
 

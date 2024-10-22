@@ -6,8 +6,8 @@ import sqlalchemy
 from src import database as db
 
 
-global has_ml
-has_ml = True
+global valid_bottle
+valid_bottle = True
 
 router = APIRouter(
     prefix="/bottler",
@@ -31,7 +31,8 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int
     with db.engine.begin() as connection:
         result = connection.execute(sqlalchemy.text("SELECT * FROM global_inventory"))
         row = result.fetchone()
-        potion_types = connection.execute(sqlalchemy.text("SELECT potion_type FROM potion_options"))
+        potion_types = connection.execute(sqlalchemy.text("SELECT potion_type, quantity FROM potion_options")).fetchall()
+        print("POTION TYPES: ", potion_types)
         list_types =  [potion_type[0] for potion_type in potion_types]
     
         potions_to_add = {1: 0,
@@ -42,6 +43,7 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int
                           6: 0}
         
         potion_variety = [list_types[0], list_types[1], list_types[2], list_types[3], list_types[4], list_types[5]]
+        potion_dict = {}
         
 
         
@@ -51,36 +53,17 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int
             blue_ml_change += potion.potion_type[2] * potion.quantity
             dark_ml_change += potion.potion_type[3] * potion.quantity
 
-            if potion.potion_type == list_types[0]:
-                potions_to_add[1] += potion.quantity
-            
-            elif potion.potion_type == list_types[1]:
-                potions_to_add[2] += potion.quantity
-            
-            elif potion.potion_type == list_types[2]:
-                potions_to_add[3] += potion.quantity
-            
-            elif potion.potion_type == list_types[3]:
-                potions_to_add[4] += potion.quantity
-            
-            elif potion.potion_type == list_types[4]:
-                potions_to_add[5] += potion.quantity
-
-            elif potion.potion_type == list_types[5]:
-                potions_to_add[6] += potion.quantity
+            potion_dict[tuple(potion.potion_type)] = potion.quantity
+            print("DICTIONARY: ", potion_dict)
 
         print("before connection")
         with db.engine.begin() as connection:    
             connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_red_ml = num_red_ml - :potion_red_amount, num_green_ml = num_green_ml - :potion_green_amount, num_blue_ml = num_blue_ml - :potion_blue_amount,  num_dark_ml = num_dark_ml - :potion_dark_amount"), {"potion_red_amount":red_ml_change, "potion_green_amount": green_ml_change, "potion_blue_amount": blue_ml_change, "potion_dark_amount": dark_ml_change})
 
-            #update potion quantities         
-            connection.execute(sqlalchemy.text(" UPDATE potion_options SET quantity = quantity + :quantity WHERE id = 1"), {"quantity": potions_to_add[1]})
-            connection.execute(sqlalchemy.text(" UPDATE potion_options SET quantity = quantity + :quantity WHERE id = 2"), {"quantity": potions_to_add[2]})
-            connection.execute(sqlalchemy.text(" UPDATE potion_options SET quantity = quantity + :quantity WHERE id = 3"), {"quantity": potions_to_add[3]})
-            connection.execute(sqlalchemy.text(" UPDATE potion_options SET quantity = quantity + :quantity WHERE id = 4"), {"quantity": potions_to_add[4]})
-            connection.execute(sqlalchemy.text(" UPDATE potion_options SET quantity = quantity + :quantity WHERE id = 5"), {"quantity": potions_to_add[5]})
-            connection.execute(sqlalchemy.text(" UPDATE potion_options SET quantity = quantity + :quantity WHERE id = 6"), {"quantity": potions_to_add[6]})
-                                                    
+            for key, value in potion_dict.items():
+                #update potion quantities         
+                connection.execute(sqlalchemy.text(" UPDATE potion_options SET quantity = quantity + :quantity WHERE potion_type = :key"), {"quantity": value, "key": list(key)})
+
  
     return []
 
@@ -90,7 +73,7 @@ def get_bottle_plan():
     Go from barrel to bottle.
     """
 
-    global has_ml
+    global valid_bottle
 
     # Each bottle has a quantity of what proportion of red, blue, and
     # green potion to add.
@@ -104,7 +87,7 @@ def get_bottle_plan():
     with db.engine.begin() as connection:
             result = connection.execute(sqlalchemy.text("SELECT * FROM global_inventory"))
             row = result.fetchone()
-            potion_types = connection.execute(sqlalchemy.text("SELECT potion_type FROM potion_options")).fetchall()
+            potion_types = connection.execute(sqlalchemy.text("SELECT potion_type, quantity FROM potion_options")).fetchall()
 
     bottle_plan = []
     potion_options = []
@@ -128,7 +111,10 @@ def get_bottle_plan():
     print('REMAINING dark: ', remaining_dark)
 
     #Checks each potion to see how much ml can be used 
-    while remaining_red >= 10 or remaining_blue >= 10 or remaining_green >= 10:
+    while valid_bottle:
+
+        valid_bottle = False
+
         for i in range(6):
             
             if (remaining_red - potion_options[i][0] >= 0 and remaining_green - potion_options[i][1] >= 0 and remaining_blue - potion_options[i][2] >= 0  and remaining_dark - potion_options[i][3] >= 0):
@@ -139,13 +125,15 @@ def get_bottle_plan():
                 elif tuple(potion_options[i]) in quantity_dict:
                     quantity_dict[tuple(potion_options[i])] += 1
 
-            remaining_red -= potion_options[i][0]
-            remaining_green -= potion_options[i][1]
-            remaining_blue -= potion_options[i][2]
-            remaining_dark -= potion_options[i][3]
+                remaining_red -= potion_options[i][0]
+                remaining_green -= potion_options[i][1]
+                remaining_blue -= potion_options[i][2]
+                remaining_dark -= potion_options[i][3]
 
+                valid_bottle = True
 
-    
+        
+
     #Add recipes with quantity > 1 to bottle plan using dictionary
     for key, value in quantity_dict.items():
         if value > 0:

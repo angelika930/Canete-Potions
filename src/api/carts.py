@@ -98,11 +98,28 @@ def post_visits(visit_id: int, customers: list[Customer]):
 @router.post("/")
 def create_cart(new_cart: Customer):
     """ """
-    global cart_index
-    global cart_dict
-    cart_index += 1
-    cart_dict[cart_index] = []
-    return {"cart_id": cart_index}
+
+    with db.engine.begin() as connection:
+        past_customer = connection.execute(sqlalchemy.text("SELECT customer_id FROM customers WHERE name = :name"), {"name": new_cart.customer_name}).fetchone()
+        #For new customers, must be added in customers and customer_cart table
+        print("WHATS IN PAST CUSTOMER: ", past_customer)
+        if past_customer == None:
+            new_customer = connection.execute(sqlalchemy.text("INSERT INTO customers(name, character_class, level) VALUES(:name, :char_class, :level) RETURNING customer_id"), {"name": new_cart.customer_name, "char_class": new_cart.character_class, "level": new_cart.level}).fetchone()
+            print("OVER HERE : ", new_customer)
+
+    with db.engine.begin() as connection:
+        
+        if past_customer == None:
+            new_cart_id = connection.execute(sqlalchemy.text("INSERT INTO customer_cart (customer_id, cart_id) VALUES (:customer_id, :cart_id)"), {"customer_id": new_customer[0], "cart_id": 1})
+            new_cart_id = 1
+
+        
+        else:
+            old_cart_id = connection.execute(sqlalchemy.text("SELECT cart_id FROM customer_cart WHERE customer_id = :result ORDER BY cart_id DESC"), {"result": past_customer[0]}).fetchone()
+            connection.execute(sqlalchemy.text("INSERT INTO customer_cart (customer_id, cart_id) VALUES (:result, :new_cart_id)"), {"result": past_customer[0], "new_cart_id": old_cart_id[0] + 1})
+            new_cart_id = old_cart_id[0] + 1
+
+    return {"cart_id": new_cart_id}
 
 
 class CartItem(BaseModel):

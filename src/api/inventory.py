@@ -22,7 +22,6 @@ def get_inventory():
         result = connection.execute(sqlalchemy.text("SELECT name, quantity FROM potion_options"))
         ml_result = connection.execute(sqlalchemy.text("SELECT num_green_ml, num_red_ml, num_blue_ml, num_dark_ml, gold FROM global_inventory"))
         ml_result = ml_result.fetchall()
-        print("ML_RESULT: ", ml_result)
         row = result.fetchall()
         
         num_ml = ml_result[0][0] + ml_result[0][1] + ml_result[0][2] + ml_result[0][3]

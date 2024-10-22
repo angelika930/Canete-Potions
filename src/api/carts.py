@@ -131,6 +131,8 @@ class CartCheckout(BaseModel):
 @router.post("/{cart_id}/checkout")
 def checkout(cart_id: int, cart_checkout: CartCheckout):
     """ """
+
+    global cart_dict
     total_potions_bought = 0
     total_gold_paid = 0
 
@@ -142,7 +144,7 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
     price_list = [p[0] for p in price]
     sku_list = [s[0] for s in sku_query]
      
-    global cart_dict
+    
     for sku, quantity in cart_dict[cart_id]:
 
        

@@ -104,13 +104,9 @@ def get_bottle_plan():
     with db.engine.begin() as connection:
             result = connection.execute(sqlalchemy.text("SELECT * FROM global_inventory"))
             row = result.fetchone()
+            potion_types = connection.execute(sqlalchemy.text("SELECT potion_type FROM potion_options")).fetchall()
 
     bottle_plan = []
-    
-    red_quantity = []
-    blue_quantity = []
-    green_quantity = []
-    dark_quantity = []
     potion_options = []
 
     quantity_dict = {}
@@ -121,34 +117,21 @@ def get_bottle_plan():
     remaining_green = row.num_green_ml
     remaining_dark = row.num_dark_ml
     
-    #pull how much red, green, and blue ml needed for all potions and grab number of potions being grabbed
-    with db.engine.begin() as connection:
-            potion_types = connection.execute(sqlalchemy.text("SELECT red, green, blue, dark, potion_type FROM potion_options")).fetchall()
-    
-    print("potion_types: ", potion_types)
-
+    #populate list potion_options with potion recipes
     for i in range(len(potion_types)):
-        potion_options.append(potion_types[i][4])
-    
-    
-    count = 0
+        potion_options.append(potion_types[i][0])
 
+    #Print statements for testing
     print('REMAINING GREEN: ', remaining_green)
     print('REMAINING red: ', remaining_red)
     print('REMAINING blue: ', remaining_blue)
     print('REMAINING dark: ', remaining_dark)
 
     #Checks each potion to see how much ml can be used 
-    
     while remaining_red >= 10 or remaining_blue >= 10 or remaining_green >= 10:
         for i in range(6):
             
             if (remaining_red - potion_options[i][0] >= 0 and remaining_green - potion_options[i][1] >= 0 and remaining_blue - potion_options[i][2] >= 0  and remaining_dark - potion_options[i][3] >= 0):
-                remaining_red -= potion_options[i][0]
-                remaining_green -= potion_options[i][1]
-                remaining_blue -= potion_options[i][2]
-                remaining_dark -= potion_options[i][3]
-
 
                 if tuple(potion_options[i]) not in quantity_dict:
                     quantity_dict[tuple(potion_options[i])] = 1
@@ -156,9 +139,14 @@ def get_bottle_plan():
                 elif tuple(potion_options[i]) in quantity_dict:
                     quantity_dict[tuple(potion_options[i])] += 1
 
+            remaining_red -= potion_options[i][0]
+            remaining_green -= potion_options[i][1]
+            remaining_blue -= potion_options[i][2]
+            remaining_dark -= potion_options[i][3]
+
 
     
-         
+    #Add recipes with quantity > 1 to bottle plan using dictionary
     for key, value in quantity_dict.items():
         if value > 0:
             bottle_plan.append(

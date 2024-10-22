@@ -133,9 +133,14 @@ def get_bottle_plan():
     
     count = 0
 
+    print('REMAINING GREEN: ', remaining_green)
+    print('REMAINING red: ', remaining_red)
+    print('REMAINING blue: ', remaining_blue)
+    print('REMAINING dark: ', remaining_dark)
+
     #Checks each potion to see how much ml can be used 
     
-    while remaining_red >= 10 and remaining_blue >= 10 and remaining_green >= 10:
+    while remaining_red >= 10 or remaining_blue >= 10 or remaining_green >= 10:
         for i in range(6):
             
             if (remaining_red - potion_options[i][0] >= 0 and remaining_green - potion_options[i][1] >= 0 and remaining_blue - potion_options[i][2] >= 0  and remaining_dark - potion_options[i][3] >= 0):
@@ -145,35 +150,14 @@ def get_bottle_plan():
                 remaining_dark -= potion_options[i][3]
 
 
-                if potion_options[i] not in quantity_dict:
-                    quantity_dict[potion_options[i]] = 1
+                if tuple(potion_options[i]) not in quantity_dict:
+                    quantity_dict[tuple(potion_options[i])] = 1
                 
-                elif potion_options[i] in quantity_dict:
-                    quantity_dict[potion_options[i]] += 1
+                elif tuple(potion_options[i]) in quantity_dict:
+                    quantity_dict[tuple(potion_options[i])] += 1
 
-            else:
-                has_ml = True
-                break
-        
-        if has_ml: break
-         
-    """
 
-    while (remaining_red - red_quantity[count] >= 0 and remaining_blue - blue_quantity[count] >= 0 and remaining_green - green_quantity[count] >= 0):    
-        quantity_dict[count] += 1
-
-        count += 1
-        print("COUNT: ", count)
-
-        print("RED_QUANTITY [COUNT]: ", red_quantity[count])
-        print("GREEN_QUANTITY [COUNT]: ", green_quantity[count])
-        print("BLUE_QUANTITY [COUNT]: ", blue_quantity[count])
-        print("QUANTITY _DICT: ", quantity_dict[count])
-
-        if (count == row.count):
-            count = 0
-       
-    """
+    
          
     for key, value in quantity_dict.items():
         if value > 0:

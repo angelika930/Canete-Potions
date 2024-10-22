@@ -1,4 +1,4 @@
-
+-- Creating tables sql
 CREATE TABLE potion_options (
     id integer PRIMARY KEY,
     name text,
@@ -12,17 +12,20 @@ CREATE TABLE potion_options (
 );
 
 CREATE TABLE carts (
-    cart_id integer PRIMARY KEY,
+    cart_id SERIAL PRIMARY KEY,
     name text,
+    character_class text,
+    level integer
 );
 
 CREATE TABLE customer_cart (
-    customer_id integer PRIMARY KEY,
+    customer_id SERIAL PRIMARY KEY,
     cart_id integer,
     potion_name text,
-    quantity text,
+    quantity text
 );
 
+-- Altering tables and inserting to tables
 
 ALTER TABLE global_inventory
 ADD COLUMN num_dark_ml INTEGER DEFAULT 0;

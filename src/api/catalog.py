@@ -11,7 +11,7 @@ router = APIRouter()
 def get_catalog():
     
     with db.engine.begin() as connection:
-        query = connection.execute(sqlalchemy.text("SELECT sku, name, quantities, potion_type, price FROM potion_options")).fetchall()
+        query = connection.execute(sqlalchemy.text("SELECT sku, name, quantity, potion_type, price FROM potion_options")).fetchall()
 
     catalog_plan = []
     

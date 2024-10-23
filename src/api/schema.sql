@@ -21,7 +21,7 @@ CREATE TABLE customers (
 CREATE TABLE customer_cart (
     id SERIAL PRIMARY KEY,
     customer_id integer,
-    cart_id integer,
+    cart_id SERIAL,
     item_sku text,
     quantity text,
     FOREIGN KEY (customer_id) REFERENCES customers(customer_id)

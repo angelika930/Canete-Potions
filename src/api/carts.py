@@ -97,71 +97,34 @@ def post_visits(visit_id: int, customers: list[Customer]):
 
 @router.post("/")
 def create_cart(new_cart: Customer):
-    """ 
-    past_customer = []
-    with db.engine.begin() as connection:
-        past_customer = connection.execute(sqlalchemy.text("SELECT customer_id, name FROM customers "), {"name": new_cart.customer_name}).fetchall()
-        check_customer = connection.execute(sqlalchemy.text("SELECT customer_id FROM customers WHERE name = :name"), {"name": new_cart.customer_name}).fetchall()
-
-        print("what is in past_customer: ", past_customer)
-        #For new customers, must be added in customers table first
-        if past_customer == []:
-            new_id = connection.execute(sqlalchemy.text("INSERT INTO customers(name, character_class, level) VALUES(:name, :char_class, :level) RETURNING customer_id"), {"name": new_cart.customer_name, "char_class": new_cart.character_class, "level": new_cart.level}).fetchone()
-            new_id = 1
-        
-        elif check_customer == []:
-            new_id = connection.execute(sqlalchemy.text("INSERT INTO customers(name, character_class, level) VALUES(:name, :char_class, :level) RETURNING customer_id"), {"name": new_cart.customer_name, "char_class": new_cart.character_class, "level": new_cart.level}).fetchone()[0]
-
-       
-        #For past customers, insert a new row
-        else:
-            new_id = connection.execute(sqlalchemy.text("INSERT INTO customer_cart (customer_id) VALUES (:customer_id) RETURNING customer_id"), {"customer_id": past_customer[0][0]}).fetchone()[0]
-
-        
-    with db.engine.begin() as connection:
     
-        #insert new row into customer_cart table for new customers
-        if check_customer == []:
-            connection.execute(sqlalchemy.text("INSERT INTO customer_cart (customer_id) VALUES (:customer_id)"), {"customer_id": new_id})
-  
-    return {"cart_id": new_id}
-    """
 
     """Create a cart for a customer, adding the customer if they don't exist."""
     with db.engine.begin() as connection:
-        # Check if the customer exists
-        max_cart_id = connection.execute(
-            sqlalchemy.text("SELECT COALESCE(MAX(cart_id), 0) + 1 FROM customer_cart")
-            ).scalar()
-       
 
         check_customer = connection.execute(
-            sqlalchemy.text("SELECT customer_id FROM customers WHERE name = :name"),
-            {"name": new_cart.customer_name}
-        ).fetchone()
+            sqlalchemy.text("SELECT customer_id FROM customers WHERE name = :name"), {"name": new_cart.customer_name}).fetchone()
 
         # If the customer does not exist, insert them
         if check_customer is None:
-            new_id = connection.execute(
+            customer_id = connection.execute(
                 sqlalchemy.text(
-                    "INSERT INTO customers (name, character_class, level) VALUES (:name, :char_class, :level) RETURNING customer_id"
-                ),
+                    "INSERT INTO customers (name, character_class, level) VALUES (:name, :char_class, :level) RETURNING customer_id"),
                 {
                     "name": new_cart.customer_name,
                     "char_class": new_cart.character_class,
                     "level": new_cart.level
-                }
-            ).fetchone()[0]
+                }).fetchone()[0]
 
         # Retrieve existing customer ID
         else:
-            new_id = check_customer[0]  
+            customer_id = check_customer[0]  
+       
 
         # Insert a new row into the customer_cart table
         cart_id = connection.execute(
-            sqlalchemy.text("INSERT INTO customer_cart (customer_id, cart_id) VALUES (:customer_id, :cart_id) RETURNING cart_id"),
-            {"customer_id": new_id, "cart_id": max_cart_id}
-        ).fetchone()[0]
+            sqlalchemy.text("INSERT INTO customer_cart (customer_id) VALUES (:customer_id) RETURNING cart_id"),
+            {"customer_id": customer_id}).fetchone()[0]
 
     return {"cart_id": cart_id}
 

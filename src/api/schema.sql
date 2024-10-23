@@ -19,13 +19,14 @@ CREATE TABLE customers (
 );
 
 CREATE TABLE customer_cart (
-    customer_id INT,
-    cart_id INT,
-    potion_name text,
+    id SERIAL PRIMARY KEY,
+    customer_id integer,
+    cart_id integer,
+    item_sku text,
     quantity text,
-    PRIMARY KEY (customer_id, cart_id),
     FOREIGN KEY (customer_id) REFERENCES customers(customer_id)
 );
+
 
 
 

@@ -29,23 +29,10 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int
     blue_ml_change = 0
     dark_ml_change = 0
     with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text("SELECT * FROM global_inventory"))
-        row = result.fetchone()
         potion_types = connection.execute(sqlalchemy.text("SELECT potion_type, quantity FROM potion_options")).fetchall()
         print("POTION TYPES: ", potion_types)
-        list_types =  [potion_type[0] for potion_type in potion_types]
-    
-        potions_to_add = {1: 0,
-                          2: 0,
-                          3: 0,
-                          4: 0,
-                          5: 0,
-                          6: 0}
         
-        potion_variety = [list_types[0], list_types[1], list_types[2], list_types[3], list_types[4], list_types[5]]
         potion_dict = {}
-        
-
         
         for potion in potions_delivered:
             red_ml_change += potion.potion_type[0] * potion.quantity
@@ -58,11 +45,15 @@ def post_deliver_bottles(potions_delivered: list[PotionInventory], order_id: int
 
         print("before connection")
         with db.engine.begin() as connection:    
-            connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_red_ml = num_red_ml - :potion_red_amount, num_green_ml = num_green_ml - :potion_green_amount, num_blue_ml = num_blue_ml - :potion_blue_amount,  num_dark_ml = num_dark_ml - :potion_dark_amount"), {"potion_red_amount":red_ml_change, "potion_green_amount": green_ml_change, "potion_blue_amount": blue_ml_change, "potion_dark_amount": dark_ml_change})
+            connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_red_ml = num_red_ml - :potion_red_amount,"
+                                               "num_green_ml = num_green_ml - :potion_green_amount, num_blue_ml = num_blue_ml - :potion_blue_amount,"
+                                                "num_dark_ml = num_dark_ml - :potion_dark_amount"), {"potion_red_amount":red_ml_change, 
+                                                "potion_green_amount": green_ml_change, "potion_blue_amount": blue_ml_change, "potion_dark_amount": dark_ml_change})
 
             for key, value in potion_dict.items():
                 #update potion quantities         
-                connection.execute(sqlalchemy.text(" UPDATE potion_options SET quantity = quantity + :quantity WHERE potion_type = :key"), {"quantity": value, "key": list(key)})
+                connection.execute(sqlalchemy.text(" UPDATE potion_options SET quantity = quantity + :quantity WHERE potion_type = :key"), 
+                                                {"quantity": value, "key": list(key)})
 
  
     return []
@@ -117,7 +108,8 @@ def get_bottle_plan():
 
         for i in range(6):
             
-            if (remaining_red - potion_options[i][0] >= 0 and remaining_green - potion_options[i][1] >= 0 and remaining_blue - potion_options[i][2] >= 0  and remaining_dark - potion_options[i][3] >= 0):
+            if (remaining_red - potion_options[i][0] >= 0 and remaining_green - potion_options[i][1] >= 0 and 
+                remaining_blue - potion_options[i][2] >= 0  and remaining_dark - potion_options[i][3] >= 0):
 
                 if tuple(potion_options[i]) not in quantity_dict:
                     quantity_dict[tuple(potion_options[i])] = 1

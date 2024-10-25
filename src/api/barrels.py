@@ -102,7 +102,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     elif row.gold >= 120 and row.gold < 320:
          return  [
                     {
-                        "sku": "MINI_GREEN_BARREL", 
+                        "sku": "MINI_BLUE_BARREL", 
                         "quantity": 1 
                     },
                      {

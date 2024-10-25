@@ -3,7 +3,7 @@ from pydantic import BaseModel
 from src.api import auth
 import sqlalchemy
 from src import database as db
-
+import random
 
 sell_green = True
 
@@ -77,11 +77,12 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     barrel_prices = {'red': 100, 'green': 100, 'blue': 120}
     budget = 0
     colors_bought = []
+    barrel_types = ["red", "blue", "green"]
     
 
     #If we are poor 
     if row.gold >= 100 and row.gold < 120:
-        if sell_green:
+        if random.choice(barrel_types == "green") :
             sell_green = False
             return  [
                     {
@@ -90,13 +91,21 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
                     }
             ]
 
-        else:
+        elif random.choice(barrel_types == 'red'):
             sell_green = True
             return  [
                     {
                         "sku": "MINI_RED_BARREL", 
                         "quantity": 1
                     }
+            ]
+        
+        elif random.choice(barrel_types == 'blue'):
+            return [
+                {
+                    "sku": "MINI_BLUE_BARREL", 
+                    "quantity": 1 
+                }                
             ]
         
     elif row.gold >= 120 and row.gold < 320:

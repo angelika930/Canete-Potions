@@ -82,7 +82,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
 
     #If we are poor 
     if row.gold >= 100 and row.gold < 120:
-        if random.choice(barrel_types == "green") :
+        if random.choice(barrel_types) == "green" :
             sell_green = False
             return  [
                     {
@@ -91,7 +91,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
                     }
             ]
 
-        elif random.choice(barrel_types == 'red'):
+        elif random.choice(barrel_types ) == 'red':
             sell_green = True
             return  [
                     {
@@ -100,7 +100,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
                     }
             ]
         
-        elif random.choice(barrel_types == 'blue'):
+        elif random.choice(barrel_types ) == 'blue':
             return [
                 {
                     "sku": "MINI_BLUE_BARREL", 

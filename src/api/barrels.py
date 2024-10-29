@@ -63,7 +63,6 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
 @router.post("/plan")
 def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
 
-    global sell_green
 
     """ """
     print(wholesale_catalog)
@@ -83,8 +82,9 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
 
     #If we are poor 
     if row.gold >= 100 and row.gold < 120:
+       
         if random.choice(barrel_types) == "green" :
-            sell_green = False
+            print("BARREL BOUGHT: Mini Green Barrel")
             return  [
                     {
                         "sku": "MINI_GREEN_BARREL", 
@@ -93,7 +93,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
             ]
 
         elif random.choice(barrel_types ) == 'red':
-            sell_green = True
+            print("BARREL BOUGHT: Mini RED Barrel")
             return  [
                     {
                         "sku": "MINI_RED_BARREL", 
@@ -102,6 +102,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
             ]
         
         elif random.choice(barrel_types ) == 'blue':
+            print("BARREL BOUGHT: Mini BLUE Barrel")
             return [
                 {
                     "sku": "MINI_BLUE_BARREL", 
@@ -124,7 +125,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
 
     #If we are getting ourselves off the ground
     elif row.gold > 320:
-
+        print("Bought small barrels of 3 colors")
         
         return [
             {

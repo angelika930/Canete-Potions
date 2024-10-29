@@ -138,7 +138,6 @@ def set_item_quantity(cart_id: int, item_sku: str, cart_item: CartItem):
     with db.engine.begin() as connection:
         check_cart = connection.execute(sqlalchemy.text("SELECT item_sku FROM customer_cart WHERE cart_id = :cart_id"), {"cart_id": cart_id}).fetchone()
         customer_id = connection.execute(sqlalchemy.text("SELECT customer_id FROM customer_cart WHERE cart_id = :cart_id"), {"cart_id": cart_id}).fetchone()
-        print("CHECK CART: ", check_cart)
         if check_cart == (None,):
             with db.engine.begin() as connection:
                 connection.execute(sqlalchemy.text("UPDATE customer_cart SET item_sku = :item_sku, quantity = :quantity WHERE customer_id = :customer_id AND cart_id = :cart_id"), {"item_sku": item_sku, "quantity": cart_item.quantity, "customer_id": customer_id[0], "cart_id": cart_id})
@@ -166,6 +165,8 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
         order = connection.execute(sqlalchemy.text("SELECT potion_options.sku, customer_cart.quantity, price FROM potion_options JOIN customer_cart ON potion_options.sku = customer_cart.item_sku WHERE cart_id = :cart_id"), {"cart_id": cart_id}).fetchall()
         print("order: ", order)
         for i in range(len(order)):
+            print("ORDER: ", order[i][1])
+            print("ORDER 2: ", order[i][2])
             total_potions_bought += int(order[i][1])
             total_gold_paid += (int(order[i][1]) * order[i][2])
             connection.execute(sqlalchemy.text("UPDATE potion_options SET quantity = quantity - :potions WHERE sku = :item_sku"), {"potions": int(order[i][1]), "item_sku": order[i][0]})

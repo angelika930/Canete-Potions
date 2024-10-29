@@ -54,6 +54,7 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
         print("GREEN ML: ", green_ml_change)
     with db.engine.begin() as connection:
         connection.execute(sqlalchemy.text("UPDATE global_inventory SET gold = gold - :price"), {"price": gold_change})
+        print("GOLD CHANGE: ", gold_change)
         connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_red_ml = num_red_ml + :red_ml_change, num_green_ml = num_green_ml + :green_ml_change, num_blue_ml = num_blue_ml + :blue_ml_change, num_dark_ml = num_dark_ml + :dark_ml_change"), {"red_ml_change": red_ml_change, "green_ml_change": green_ml_change, "blue_ml_change": blue_ml_change, "dark_ml_change": dark_ml_change})
 
     return []

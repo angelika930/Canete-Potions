@@ -27,6 +27,12 @@ CREATE TABLE customer_cart (
     FOREIGN KEY (customer_id) REFERENCES customers(customer_id)
 );
 
+CREATE TABLE potion_inventory (
+    id bigserial PRIMARY KEY,
+    potion_type int ARRAY[4],
+    quantity integer
+)
+
 
 
 

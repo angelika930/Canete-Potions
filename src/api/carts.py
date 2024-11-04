@@ -162,16 +162,20 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
     total_gold_paid = 0
 
     with db.engine.begin() as connection:
-        order = connection.execute(sqlalchemy.text("SELECT potion_options.sku, customer_cart.quantity, price FROM potion_options JOIN customer_cart ON potion_options.sku = customer_cart.item_sku WHERE cart_id = :cart_id"), {"cart_id": cart_id}).fetchall()
+        order = connection.execute(sqlalchemy.text("SELECT potion_options.potion_type, customer_cart.quantity, price "
+                                                   "FROM potion_options INNER JOIN customer_cart ON potion_options.sku = customer_cart.item_sku "
+                                                   "WHERE cart_id = :cart_id"), {"cart_id": cart_id}).fetchall()
         print("order: ", order)
         for i in range(len(order)):
             print("ORDER: ", order[i][1])
             print("ORDER 2: ", order[i][2])
             total_potions_bought += int(order[i][1])
             total_gold_paid += (int(order[i][1]) * order[i][2])
-            connection.execute(sqlalchemy.text("UPDATE potion_options SET quantity = quantity - :potions WHERE sku = :item_sku"), {"potions": int(order[i][1]), "item_sku": order[i][0]})
-            
-        connection.execute(sqlalchemy.text("UPDATE global_inventory SET gold = gold + :yield"), {"yield": total_gold_paid})
+            print("LOOK AT THIS quantity ",  order[i][1])
+            connection.execute(sqlalchemy.text("INSERT INTO potion_inventory (potion_type, quantity) VALUES (:potion_type, :quantity)"), 
+                               {"potion_type": order[i][0], "quantity": -int(order[i][1])})            
+        connection.execute(sqlalchemy.text("INSERT INTO global_inventory (gold) VALUES (:gold)"),
+                                           {"gold": total_gold_paid})
   
 
     return {

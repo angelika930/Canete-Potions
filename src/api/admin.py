@@ -19,15 +19,25 @@ def reset():
     """
 
     with db.engine.begin() as connection:
-            connection.execute(sqlalchemy.text("UPDATE global_inventory SET gold = 100"))
-            connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_green_potions = 0"))
-            connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_green_ml = 0"))
-            connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_red_potions = 0"))
-            connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_red_ml = 0"))
-            connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_blue_potions = 0"))
-            connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_blue_ml = 0"))
-            connection.execute(sqlalchemy.text("UPDATE global_inventory SET blue_potions_bought = 0"))
-            connection.execute(sqlalchemy.text("UPDATE global_inventory SET green_potions_bought = 0"))
-            connection.execute(sqlalchemy.text("UPDATE global_inventory SET red_potions_bought = 0"))
+            res = connection.execute(sqlalchemy.text("SELECT SUM(CAST(gold AS INTEGER)),  SUM(CAST(num_red_ml AS INTEGER))," 
+                                    "SUM(CAST(num_green_ml AS INTEGER)), SUM(CAST(num_blue_ml AS INTEGER)), SUM(CAST(num_dark_ml AS INTEGER))" 
+                                    "FROM duplicate")).fetchall()
+            gold = -(res[0][0] - 100)
+            red = -res[0][1]
+            green = -res[0][2]
+            blue = -res[0][3]
+            dark = -res[0][4]
+
+            connection.execute(sqlalchemy.text("INSERT INTO global_inventory (gold, num_red_ml, num_green_ml, num_blue_ml, num_dark_ml)"
+                                           "VALUES (:gold, :red, :green, :blue, :dark)"),
+                                           {
+                                               "gold": gold , "red": red,  
+                                               "green": green, "blue": blue, "dark": dark
+                                            
+                                            }
+                                           
+                                           )
+            
+            
     return "OK"
 

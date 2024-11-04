@@ -5,7 +5,9 @@ import sqlalchemy
 from src import database as db
 import random
 
-sell_green = True
+sell_green = False
+sell_blue = False
+sell_red = False
 
 router = APIRouter(
     prefix="/barrels",
@@ -53,9 +55,15 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
 
         print("GREEN ML: ", green_ml_change)
     with db.engine.begin() as connection:
-        connection.execute(sqlalchemy.text("UPDATE global_inventory SET gold = gold - :price"), {"price": gold_change})
+        
+        connection.execute(sqlalchemy.text("INSERT INTO global_inventory (gold, num_red_ml, num_green_ml, num_blue_ml, num_dark_ml)"
+                                           "VALUES (:gold, :red, :green, :blue, :dark)"),
+                                           {
+                                               "gold": -gold_change, "red": red_ml_change, "blue": blue_ml_change, 
+                                               "green": green_ml_change, "dark": dark_ml_change
+                                            
+                                            })
         print("GOLD CHANGE: ", gold_change)
-        connection.execute(sqlalchemy.text("UPDATE global_inventory SET num_red_ml = num_red_ml + :red_ml_change, num_green_ml = num_green_ml + :green_ml_change, num_blue_ml = num_blue_ml + :blue_ml_change, num_dark_ml = num_dark_ml + :dark_ml_change"), {"red_ml_change": red_ml_change, "green_ml_change": green_ml_change, "blue_ml_change": blue_ml_change, "dark_ml_change": dark_ml_change})
 
     return []
 
@@ -83,7 +91,8 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     #If we are poor 
     if row.gold >= 100 and row.gold < 120:
        
-        if random.choice(barrel_types) == "green" :
+        if random.choice(barrel_types) == "green":
+          
             print("BARREL BOUGHT: Mini Green Barrel")
             return  [
                     {
@@ -110,7 +119,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
                 }                
             ]
         
-    elif row.gold >= 120 and row.gold < 320:
+    elif row.gold >= 120 and row.gold < 180:
          return  [
                     {
                         "sku": "MINI_BLUE_BARREL", 
@@ -120,6 +129,23 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
                         "sku": "MINI_RED_BARREL", 
                         "quantity": 1
                     }
+
+            ]
+    
+    elif row.gold > 180 and row.gold < 320:
+         return  [
+                {
+                    "sku": "MINI_BLUE_BARREL", 
+                    "quantity": 1 
+                },
+                    {
+                    "sku": "MINI_RED_BARREL", 
+                    "quantity": 1
+                },
+                    {
+                    "sku": "MINI_GREEN_BARREL", 
+                    "quantity": 1 
+                }
 
             ]
 

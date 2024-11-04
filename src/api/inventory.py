@@ -19,18 +19,15 @@ def get_inventory():
     num_ml = 0
 
     with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text("SELECT name, quantity FROM potion_options"))
-        ml_result = connection.execute(sqlalchemy.text("SELECT num_green_ml, num_red_ml, num_blue_ml, num_dark_ml, gold FROM global_inventory"))
-        ml_result = ml_result.fetchall()
-        row = result.fetchall()
+        row = connection.execute(sqlalchemy.text("SELECT SUM(quantity) FROM potion_inventory")).fetchall()
+        ml_result = connection.execute(sqlalchemy.text("SELECT SUM(num_green_ml), SUM(num_red_ml), SUM(num_blue_ml), SUM(num_dark_ml), SUM(gold) FROM global_inventory")).fetchall()
         
         num_ml = ml_result[0][0] + ml_result[0][1] + ml_result[0][2] + ml_result[0][3]
-        for i in range(len(row)):
-            num_potions += row[i][1]
+
 
         
         return {
-              "number_of_potions": num_potions,
+              "number_of_potions": row[0][0],
                 "ml_in_barrels": num_ml,
                 "gold": ml_result[0][4]
         }

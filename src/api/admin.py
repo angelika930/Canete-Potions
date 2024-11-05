@@ -21,7 +21,7 @@ def reset():
     with db.engine.begin() as connection:
             res = connection.execute(sqlalchemy.text("SELECT SUM(CAST(gold AS INTEGER)),  SUM(CAST(num_red_ml AS INTEGER))," 
                                     "SUM(CAST(num_green_ml AS INTEGER)), SUM(CAST(num_blue_ml AS INTEGER)), SUM(CAST(num_dark_ml AS INTEGER))" 
-                                    "FROM duplicate")).fetchall()
+                                    "FROM global_inventory")).fetchall()
             gold = -(res[0][0] - 100)
             red = -res[0][1]
             green = -res[0][2]

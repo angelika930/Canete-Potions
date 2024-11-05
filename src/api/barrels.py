@@ -76,9 +76,16 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     print(wholesale_catalog)
 
     with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text("SELECT * FROM global_inventory"))
-        row = result.fetchone()
-    
+        inventory = connection.execute(sqlalchemy.text("SELECT SUM(gold), SUM(num_red_ml), SUM(num_green_ml), SUM(num_blue_ml), SUM(num_dark_ml)"
+                                                  "FROM global_inventory")).fetchall()
+        
+        gold = inventory[0][0] 
+        num_red_ml = inventory[0][1]
+        num_green_ml = inventory[0][2]
+        num_blue_ml = inventory[0][3]
+        num_dark_ml = inventory[0][4]
+
+      
     result = []
 
     barrel_quantity = {'red': 0, 'blue': 0, 'green': 0}
@@ -89,7 +96,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     
 
     #If we are poor 
-    if row.gold >= 100 and row.gold < 120:
+    if gold >= 100 and gold < 120:
        
         if random.choice(barrel_types) == "green":
           
@@ -119,7 +126,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
                 }                
             ]
         
-    elif row.gold >= 120 and row.gold < 180:
+    elif gold >= 120 and gold < 180:
          return  [
                     {
                         "sku": "MINI_BLUE_BARREL", 
@@ -132,7 +139,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
 
             ]
     
-    elif row.gold > 180 and row.gold < 320:
+    elif gold > 180 and gold < 320:
          return  [
                 {
                     "sku": "MINI_BLUE_BARREL", 
@@ -150,7 +157,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
             ]
 
     #If we are getting ourselves off the ground
-    elif row.gold > 320:
+    elif gold > 320:
         print("Bought small barrels of 3 colors")
         
         return [
@@ -168,14 +175,14 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
             }
         ]
     
-    elif row.gold > 600:
+    elif gold > 600:
 
         #Determine what color barrels to buy
-        if row.num_green_ml < 1000:
+        if num_green_ml < 1000:
             colors_bought.append('green')
-        if row.num_blue_ml < 1000:
+        if num_blue_ml < 1000:
             colors_bought.append('blue')
-        if row.num_red_ml < 1000:
+        if num_red_ml < 1000:
             colors_bought.append('red')
 
 

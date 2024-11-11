@@ -82,8 +82,7 @@ def get_bottle_plan():
     #blue_potion_quantity = row.num_blue_ml//100
 
     with db.engine.begin() as connection:
-            result = connection.execute(sqlalchemy.text("SELECT * FROM global_inventory"))
-            row = result.fetchone()
+            result = connection.execute(sqlalchemy.text("SELECT SUM(num_red_ml), SUM(num_green_ml), SUM(num_blue_ml), SUM(num_dark_ml) FROM global_inventory")).fetchall()
             potion_types = connection.execute(sqlalchemy.text("SELECT potion_type FROM potion_options")).fetchall()
 
     bottle_plan = []
@@ -92,10 +91,10 @@ def get_bottle_plan():
     quantity_dict = {}
 
     #Find remaining ml
-    remaining_red = row.num_red_ml
-    remaining_blue = row.num_blue_ml
-    remaining_green = row.num_green_ml
-    remaining_dark = row.num_dark_ml
+    remaining_red = result[0][0]
+    remaining_blue = result[0][2]
+    remaining_green = result[0][1]
+    remaining_dark = result[0][3]
     
     #populate list potion_options with potion recipes
     for i in range(len(potion_types)):

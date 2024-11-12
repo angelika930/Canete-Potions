@@ -81,9 +81,11 @@ def search_orders(
             
         )
         .select_from(customer_cart)  
-        .join(customers, customers.c.customer_id == customer_cart.c.customer_id)
         .join(potion_options, potion_options.c.sku == customer_cart.c.item_sku)
         .join(potion_inventory, potion_inventory.c.potion_type == potion_options.c.potion_type)
+        .join(customers, customers.c.customer_id == customer_cart.c.customer_id)
+        
+        
     )
 
     if customer_name != "" and potion_sku != "":
@@ -92,6 +94,9 @@ def search_orders(
                 customer_cart.c.item_sku == potion_sku
                 ))
     elif customer_name != "" and potion_sku == "":
+        with db.engine.begin() as connection:
+            res = connection.execute(base_query).fetchall()
+            print(res)
         base_query = base_query.where(customers.c.name == customer_name)
     
     elif customer_name == "" and potion_sku != "": 

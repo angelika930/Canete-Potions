@@ -5,7 +5,7 @@ from enum import Enum
 import sqlalchemy
 from src import database as db
 from datetime import datetime
-from sqlalchemy import select, and_, cast, Numeric, func
+from sqlalchemy import select, and_, cast, Numeric, func, distinct
 
 
 metadata_obj = sqlalchemy.MetaData()
@@ -76,17 +76,23 @@ def search_orders(
         select (
             customer_cart.c.item_sku,
             customers.c.name,
-            (func.cast(customer_cart.c.quantity, Numeric) * func.cast(potion_options.c.price, Numeric)).label("total_price"),
-            potion_inventory.c.timestamp
+            func.sum(func.cast(customer_cart.c.quantity, Numeric) * func.cast(potion_options.c.price, Numeric)).label("total_price"),
+            test.c.timestamp
             
         )
         .select_from(customer_cart)  
         .join(potion_options, potion_options.c.sku == customer_cart.c.item_sku)
-        .join(potion_inventory, potion_inventory.c.potion_type == potion_options.c.potion_type)
+        .join(test, test.c.potion_type == potion_options.c.potion_type)
         .join(customers, customers.c.customer_id == customer_cart.c.customer_id)
+        .group_by(customer_cart.c.item_sku, customers.c.name, test.c.timestamp, customer_cart.c.quantity, potion_options.c.price)
         
         
     )
+
+    with db.engine.begin() as connection:
+        res = connection.execute(base_query).fetchall()
+        print(res)
+
 
     if customer_name != "" and potion_sku != "":
         base_query = base_query.where(and_(
@@ -102,73 +108,108 @@ def search_orders(
     elif customer_name == "" and potion_sku != "": 
         base_query = base_query.where(customer_cart.c.item_sku == potion_sku)
       
-    base_query = base_query.limit(5)  # Limit results to 5 per page
+   
 
     # Sorting logic with match-case structure
     match sort_col:
         case search_sort_options.timestamp:
-            sort_column = potion_inventory.c.timestamp
+            sort_column = test.c.timestamp
+          
+
         case search_sort_options.customer_name:
             sort_column = customers.c.name
+           
+
         case search_sort_options.item_sku:
             sort_column = customer_cart.c.item_sku
+           
+
         case search_sort_options.line_item_total:
             sort_column = customer_cart.c.quantity * potion_options.c.price
+        
+
         case _:
-            sort_column = potion_inventory.c.timestamp  # Default sort by timestamp if no match
+            sort_column = test.c.timestamp  # Default sort by timestamp if no match
+          
+
+  
+
+    if search_page != "":
+        if sort_order == "asc":
+            # For ascending order pagination
+            base_query = base_query.where(sort_column > search_page)
+        elif sort_order == "desc":
+            # For descending order pagination
+            base_query = base_query.where(sort_column < search_page)
+ 
 
     # Handle sorting order with match-case
     if sort_order == "asc":
         base_query = base_query.order_by(sort_column.asc())
     else:  # Default to descending order
         base_query = base_query.order_by(sort_column.desc())
-
-    #Limit 5 per page
-    base_query = base_query.limit(5)
-
-    #Enable pagination
-    if search_page:
-        search_page_datetime = datetime.fromisoformat(search_page)  
-
-        # For the next page (items before the cursor timestamp)
-        base_query = base_query.where(potion_inventory.c.timestamp < search_page_datetime)
+    
 
 
+    #base_query = base_query.limit(5)  # Limit results to 5 per page
     with db.engine.begin() as connection:
         res = connection.execute(base_query).fetchall()
-        print(res)
+    
+    num_results = len(res)
+    res = res[:5]
     results = []
+    print(res)
+    
+    match sort_col:
+        case search_sort_options.timestamp:
+            search_token_next =  res[-1][3]
+            search_token_prev = res[0][3]
 
+        case search_sort_options.customer_name:
+            search_token_next =  res[-1][1]
+            search_token_prev = res[0][1]
+
+        case search_sort_options.item_sku:
+            search_token_next =  res[-1][0]
+            search_token_prev = res[0][0]
+
+        case search_sort_options.line_item_total:
+            search_token_next =  res[-1].total_price
+            search_token_prev = res[0].total_price
+
+        case _:
+            search_token_next =  res[-1][2]
+            search_token_prev = res[0][2]
+    
     for row in res:
         results.append({
-            "line_item_id": row.item_sku,  # Assuming item_sku as line_item_id for uniqueness
-            "item_sku": row.item_sku,
+            "line_item_id": row.item_sku,  
             "customer_name": row.name,
             "total_price": int(row.total_price),  # Cast to float for easier consumption
             "timestamp": row.timestamp
         })
     
+    
+
     next_token = None
     previous_token = None
 
-    #Get the next token 
-    next_token = None
-    if len(res) == 5:
-        next_token = res[-1].timestamp  
-
-    if len(res) == 5:
-        # If we have 5 results, set the 'next' token (for the next page of results)
-        next_token = res[-1].timestamp  # The timestamp of the last item is the cursor for the next page
+    if num_results > 5:  # If we have 5 results, there might be more data
+        next_token = search_token_next  # For ascending order, use the last result's timestamp as the next token
+        previous_token = search_token_prev  # Use the first result's timestamp as the previous token
         
-        # Set the 'previous' token (for the previous page of results)
-        previous_token = res[0].timestamp 
-    
+    elif num_results <= 5:
+        next_token = ""
+        previous_token = ""
+
+    print("neXT: ", next_token)
+    print("prev: ", previous_token)
     return {
         "next": next_token,  # Timestamp of the last item in this set, used for the next page
         "previous": previous_token,  # Timestamp of the first item in this set, used for the previous page
         "results": results
     }
-
+    
 
 class Customer(BaseModel):
     customer_name: str

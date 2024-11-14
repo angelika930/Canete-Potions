@@ -76,23 +76,17 @@ def search_orders(
         select (
             customer_cart.c.item_sku,
             customers.c.name,
-            func.sum(func.cast(customer_cart.c.quantity, Numeric) * func.cast(potion_options.c.price, Numeric)).label("total_price"),
+            (func.cast(customer_cart.c.quantity, Numeric) * func.cast(potion_options.c.price, Numeric)).label("total_price"),
             test.c.timestamp
             
         )
         .select_from(customer_cart)  
         .join(potion_options, potion_options.c.sku == customer_cart.c.item_sku)
-        .join(test, test.c.potion_type == potion_options.c.potion_type)
+        .join(test, test.c.cart_id == customer_cart.c.cart_id)
         .join(customers, customers.c.customer_id == customer_cart.c.customer_id)
-        .group_by(customer_cart.c.item_sku, customers.c.name, test.c.timestamp, customer_cart.c.quantity, potion_options.c.price)
         
         
     )
-
-    with db.engine.begin() as connection:
-        res = connection.execute(base_query).fetchall()
-        print(res)
-
 
     if customer_name != "" and potion_sku != "":
         base_query = base_query.where(and_(
@@ -108,6 +102,8 @@ def search_orders(
     elif customer_name == "" and potion_sku != "": 
         base_query = base_query.where(customer_cart.c.item_sku == potion_sku)
       
+    base_query = base_query.group_by(customer_cart.c.item_sku, customers.c.name, test.c.timestamp, customer_cart.c.quantity, potion_options.c.price)
+
    
 
     # Sorting logic with match-case structure
@@ -132,17 +128,6 @@ def search_orders(
             sort_column = test.c.timestamp  # Default sort by timestamp if no match
           
 
-  
-
-    if search_page != "":
-        if sort_order == "asc":
-            # For ascending order pagination
-            base_query = base_query.where(sort_column > search_page)
-        elif sort_order == "desc":
-            # For descending order pagination
-            base_query = base_query.where(sort_column < search_page)
- 
-
     # Handle sorting order with match-case
     if sort_order == "asc":
         base_query = base_query.order_by(sort_column.asc())
@@ -155,52 +140,68 @@ def search_orders(
     with db.engine.begin() as connection:
         res = connection.execute(base_query).fetchall()
     
-    num_results = len(res)
-    res = res[:5]
+   
     results = []
-    print(res)
     
-    match sort_col:
-        case search_sort_options.timestamp:
-            search_token_next =  res[-1][3]
-            search_token_prev = res[0][3]
-
-        case search_sort_options.customer_name:
-            search_token_next =  res[-1][1]
-            search_token_prev = res[0][1]
-
-        case search_sort_options.item_sku:
-            search_token_next =  res[-1][0]
-            search_token_prev = res[0][0]
-
-        case search_sort_options.line_item_total:
-            search_token_next =  res[-1].total_price
-            search_token_prev = res[0].total_price
-
-        case _:
-            search_token_next =  res[-1][2]
-            search_token_prev = res[0][2]
-    
+   
+    line_item_id = 1
     for row in res:
         results.append({
-            "line_item_id": row.item_sku,  
+            "line_item_id": line_item_id,  
+            "item_sku": row.item_sku,
             "customer_name": row.name,
             "total_price": int(row.total_price),  # Cast to float for easier consumption
             "timestamp": row.timestamp
         })
-    
-    
 
+        line_item_id += 1
+    
+    print("length of results: ", len(results))
+    
     next_token = None
     previous_token = None
 
-    if num_results > 5:  # If we have 5 results, there might be more data
-        next_token = search_token_next  # For ascending order, use the last result's timestamp as the next token
-        previous_token = search_token_prev  # Use the first result's timestamp as the previous token
+    #Determine next and previous token
+    if search_page != "":
+        search_page = int(search_page)
+
+        temp_previous_page = search_page
+        temp_next_page = search_page
+
+        #Determine what results to return based on search page
+        estimate_upper_line_item = search_page * 5
+        upper_limit = min(len(res), estimate_upper_line_item)
+        lower_line_item = upper_limit - 4
         
-    elif num_results <= 5:
-        next_token = ""
+        
+        #Indicates there is a next page
+        if len(results) > upper_limit:
+            temp_next_page += 1
+            next_token = str(temp_next_page)
+        
+        elif len(results) <= upper_limit:
+            next_token = ""
+            
+        if (temp_previous_page - 1) > 0:
+            temp_previous_page -= 1
+            previous_token = str(temp_previous_page)
+
+        else:
+            previous_token = ""
+
+        results = results[ estimate_upper_line_item - 5 : upper_limit  ]
+            
+    elif search_page == "":
         previous_token = ""
+
+        #Determine next_token
+        if len(results) > 5:
+            next_token = 2
+        
+        else: next_token = ""
+
+        #Determine what results to return based on search page
+        results = results[:5]
 
     print("neXT: ", next_token)
     print("prev: ", previous_token)
@@ -301,7 +302,7 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
                                                    "WHERE cart_id = :cart_id"), {"cart_id": cart_id}).fetchall()
         print("order: ", order)
         for i in range(len(order)):
-            current_datetime = datetime.datetime.now()
+            current_datetime = datetime.now()
             print("ORDER: ", order[i][1])
             print("ORDER 2: ", order[i][2])
             total_potions_bought += int(order[i][1])

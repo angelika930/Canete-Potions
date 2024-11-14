@@ -71,9 +71,75 @@ def post_deliver_barrels(barrels_delivered: list[Barrel], order_id: int):
 @router.post("/plan")
 def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
 
-
-    """ """
     print(wholesale_catalog)
+    """
+    with db.engine.begin() as connection:
+        inventory = connection.execute(sqlalchemy.text("SELECT SUM(gold), SUM(num_red_ml), SUM(num_green_ml), SUM(num_blue_ml), SUM(num_dark_ml)"
+                                                  "FROM test_global_inventory_duplicate")).fetchall()
+        
+    gold = inventory[0][0]
+    print("GOLD: ", gold)
+    num_red_ml = inventory[0][1]
+    num_green_ml = inventory[0][2]
+    num_blue_ml = inventory[0][3]
+    num_dark_ml = inventory[0][4]
+    color_barrel = ""
+    
+
+    #Sort barrel list by price
+    wholesale_catalog.sort(key=lambda barrel: barrel.price)
+    print("catalog: ", wholesale_catalog)
+
+    #initialize barrel plan
+    barrel_plan = []
+
+    capacity = 0
+    if gold < 500:
+        capacity = 500
+
+    elif gold >= 500:
+        capacity = 1000
+
+    elif gold >= 1000:
+        capacity = 1500
+
+
+    for barrel in wholesale_catalog:
+        sku = barrel.sku.lower()
+        ml = barrel.ml_per_barrel
+        potion_type = barrel.potion_type
+        price = barrel.price
+        quantity = barrel.quantity
+
+        
+        if sku.__contains__('red'):
+            color_barrel = num_red_ml
+            
+        elif sku.__contains__('blue'):
+            color_barrel = num_blue_ml
+            
+        elif sku.__contains__('green'):
+            color_barrel = num_green_ml
+
+        if sku.__contains__('dark'):
+            color_barrel = num_dark_ml
+
+        #Buy barrels based on the amount of money we have
+        
+        if gold - price >= 0 and capacity - color_barrel >= 0:
+            if (gold < 120 and sku.__contains__("mini")) or (gold >= 120 and sku.__contains__("small")) or (gold >= 1000 and sku.__contains__("large")):
+                barrel_plan.append({
+                    "sku": sku,
+                    "quantity": 1
+                },)
+                capacity = capacity - color_barrel
+                gold = gold - price
+
+    print("Barrel Plan: ", barrel_plan)
+    return barrel_plan
+    """
+
+    
 
     with db.engine.begin() as connection:
         inventory = connection.execute(sqlalchemy.text("SELECT SUM(gold), SUM(num_red_ml), SUM(num_green_ml), SUM(num_blue_ml), SUM(num_dark_ml)"
@@ -236,6 +302,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
                     },)
         print("BARRELS WANTED: ", result)
         return result
+
 
 
 

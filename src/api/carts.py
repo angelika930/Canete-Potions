@@ -150,7 +150,7 @@ def search_orders(
             "line_item_id": line_item_id,  
             "item_sku": row.item_sku,
             "customer_name": row.name,
-            "total_price": int(row.total_price),  # Cast to float for easier consumption
+            "line_item_total": int(row.total_price),  # Cast to float for easier consumption
             "timestamp": row.timestamp
         })
 
